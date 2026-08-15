@@ -19,6 +19,33 @@
 
     <name>smf4j-core</name>
     <description>Core module of SMF4J - Simple Metrics Facade for Java</description>
+    <url>https://github.com/yubrajsahoo/smf4j</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Yubraj Sahoo</name>
+            <url>https://github.com/yubrajsahoo</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/yubrajsahoo/smf4j.git</connection>
+        <developerConnection>scm:git:ssh://github.com:yubrajsahoo/smf4j.git</developerConnection>
+        <url>https://github.com/yubrajsahoo/smf4j</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/yubrajsahoo/smf4j/issues</url>
+    </issueManagement>
 
     <properties>
         <java.version>17</java.version>

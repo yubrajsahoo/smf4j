@@ -35,12 +35,10 @@ public final class MetricsLogger {
         logBuilder.append("name=")
                 .append(metrics.getName());
 
-        metrics.getTags().forEach(tag -> {
-            logBuilder.append("->")
-                    .append(tag.getKey())
-                    .append("=")
-                    .append(tag.getValue());
-        });
+        metrics.getTags().forEach(tag -> logBuilder.append("->")
+                .append(tag.getKey())
+                .append("=")
+                .append(tag.getValue()));
 
         logBuilder
                 .append("->")

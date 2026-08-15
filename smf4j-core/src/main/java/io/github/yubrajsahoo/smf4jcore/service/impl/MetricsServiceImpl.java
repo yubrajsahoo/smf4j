@@ -1,0 +1,116 @@
+package io.github.yubrajsahoo.smf4jcore.service.impl;
+
+import io.github.yubrajsahoo.smf4jcore.annotation.Counter;
+import io.github.yubrajsahoo.smf4jcore.domain.CounterMetrics;
+import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
+import io.github.yubrajsahoo.smf4jcore.factory.MeterFactory;
+import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
+import io.github.yubrajsahoo.smf4jcore.spel.SpelEvaluator;
+import io.github.yubrajsahoo.smf4jcore.utils.MetricsLogger;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Default implementation of {@link MetricsService}.
+ * <p>
+ * Evaluates dynamic metric tag expressions via {@link SpelEvaluator}, constructs concrete domain models
+ * like {@link CounterMetrics}, logs the recording at debug level, and delegates execution to the
+ * appropriate {@link io.github.yubrajsahoo.smf4jcore.meter.service.MeterService} provided by {@link MeterFactory}.
+ * </p>
+ *
+ * @author Yubraj Sahoo
+ * @version 0.0.1
+ * @see MetricsService
+ * @see SpelEvaluator
+ * @see MeterFactory
+ * @since 0.0.1
+ */
+public class MetricsServiceImpl implements MetricsService {
+
+    private static final Logger log = LoggerFactory.getLogger(MetricsServiceImpl.class);
+
+    private final SpelEvaluator spelEvaluator;
+    private final MeterFactory meterFactory;
+
+    /**
+     * Constructs a new {@link MetricsServiceImpl} with the required dependencies.
+     *
+     * @param spelEvaluator the SpEL evaluator for resolving dynamic metric tags; must not be {@code null}
+     * @param meterFactory  the meter factory for dispatching to specific meter services; must not be {@code null}
+     * @throws NullPointerException if {@code spelEvaluator} or {@code meterFactory} is {@code null}
+     */
+    public MetricsServiceImpl(SpelEvaluator spelEvaluator, MeterFactory meterFactory) {
+        this.spelEvaluator = Objects.requireNonNull(spelEvaluator, "spelEvaluator must not be null");
+        this.meterFactory = Objects.requireNonNull(meterFactory, "meterFactory must not be null");
+    }
+
+    /**
+     * Records a counter metric by evaluating dynamic tag expressions with SpEL,
+     * building {@link CounterMetrics}, logging the metric details, and delegating
+     * to the corresponding {@link io.github.yubrajsahoo.smf4jcore.meter.service.MeterService}.
+     *
+     * @param counter the {@link Counter} annotation metadata
+     * @param context the SpEL evaluation context containing invocation variables
+     */
+    @Override
+    public void record(Counter counter, StandardEvaluationContext context) {
+        if (counter == null) {
+            log.warn("Cannot record metrics for null Counter annotation");
+            return;
+        }
+
+        try {
+            Tags tags = evaluateTags(counter.tags(), context);
+
+            CounterMetrics metrics = CounterMetrics.builder()
+                    .name(counter.name())
+                    .description(counter.description())
+                    .tags(tags)
+                    .enabled(counter.enable())
+                    .increment(counter.increment())
+                    .build();
+
+            MetricsLogger.log(metrics);
+
+            if (!metrics.isEnabled()) {
+                return;
+            }
+            meterFactory.getMeterService(MetricsType.COUNTER)
+                    .ifPresentOrElse(
+                            meterService -> meterService.record(metrics),
+                            () -> log.warn("No MeterService found for metrics type: {}", MetricsType.COUNTER)
+                    );
+        } catch (Throwable throwable) {
+            log.error("Error while recording counter metric '{}': {}", counter.name(), throwable.getMessage(), throwable);
+        }
+    }
+
+    /**
+     * Evaluates tag expressions defined in annotations against the given SpEL evaluation context.
+     *
+     * @param tags    the array of {@link io.github.yubrajsahoo.smf4jcore.annotation.Tags} to evaluate
+     * @param context the SpEL evaluation context
+     * @return the evaluated Micrometer {@link Tags}
+     */
+    private Tags evaluateTags(io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags,
+                              StandardEvaluationContext context) {
+        if (tags == null || tags.length == 0) {
+            return Tags.empty();
+        }
+        List<Tag> tagList = new ArrayList<>(tags.length);
+        for (io.github.yubrajsahoo.smf4jcore.annotation.Tags tag : tags) {
+            if (tag != null) {
+                String value = spelEvaluator.evaluate(tag.value(), context);
+                tagList.add(Tag.of(tag.key(), value));
+            }
+        }
+        return Tags.of(tagList);
+    }
+}

@@ -21,8 +21,23 @@ public final class MetricsConstant {
      */
     public static final String DEFAULT_LOG_MESSAGE = "Metrics Logs For With->";
 
+    /**
+     * Default message prefix used by {@link io.github.yubrajsahoo.smf4jcore.utils.MetricsLogger}
+     * when logging metrics that are disabled.
+     */
     public static final String DEFAULT_DISABLED_LOG_MESSAGE = "Metrics Disabled For->";
 
+    /**
+     * List of allowed prefixes that indicate a SpEL expression rather than a literal value.
+     * <p>
+     * Supported prefixes:
+     * <ul>
+     *   <li>{@code @} – bean reference expressions</li>
+     *   <li>{@code #} – variable reference expressions</li>
+     *   <li>{@code T} – type reference expressions</li>
+     * </ul>
+     * </p>
+     */
     public static final List<String> ALLOWED_SPEL_DESIGNS = List.of("@", "#", "T");
 
     /**

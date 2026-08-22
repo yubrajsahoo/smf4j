@@ -1,6 +1,0 @@
-{
-  "name": "orders.created",
-  "description": "Counts the number of orders created",
-  "increment": 1,
-  "enabled": true
-}

@@ -1,0 +1,6 @@
+{
+  "name": "test.counter",
+  "description": "A test",
+  "increment": 1,
+  "enable": true
+}

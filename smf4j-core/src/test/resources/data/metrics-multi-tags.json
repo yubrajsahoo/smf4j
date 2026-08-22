@@ -1,0 +1,8 @@
+{
+  "name": "multi.tag.counter",
+  "tags": {
+    "region": "us-east",
+    "env": "prod"
+  },
+  "increment": 2
+}

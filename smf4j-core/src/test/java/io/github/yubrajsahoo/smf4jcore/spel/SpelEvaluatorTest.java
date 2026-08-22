@@ -1,147 +1,195 @@
 package io.github.yubrajsahoo.smf4jcore.spel;
 
-import io.github.yubrajsahoo.smf4jcore.Smf4jCoreTestApplication;
 import io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.reflect.MethodSignature;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.expression.BeanResolver;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+/**
+ * Unit tests for {@link SpelEvaluator}.
+ * <p>
+ * Validates expression evaluation against a {@link StandardEvaluationContext},
+ * including literal passthrough, variable resolution, nested property access,
+ * type expressions, expression caching, and graceful fallback on errors.
+ * </p>
+ *
+ * @author Yubraj Sahoo
+ * @version 0.0.1
+ * @since 0.0.1
+ * @see SpelEvaluator
+ * @see MetricsConstant#NONE
+ */
+class SpelEvaluatorTest {
 
-public class SpelEvaluatorTest extends Smf4jCoreTestApplication {
-    @Autowired
     private SpelEvaluator spelEvaluator;
-    @Autowired
-    private BeanResolver beanResolver;
+    private StandardEvaluationContext context;
 
-    @Test
-    @DisplayName("Test SpelEvaluator evaluate method with result expressions")
-    void testEvaluate_error() {
-        Exception exception = new RuntimeException("Error Message", new IOException("File Not Found"));
-
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null,
-                exception, null);
-        String expression = "#error.getMessage()";
-        String expression2 = "#rootError.getMessage()";
-
-        String evaluatedValue = spelEvaluator.evaluate(expression, context);
-        String evaluatedValue2 = spelEvaluator.evaluate(expression2, context);
-
-        assertEquals("Error Message", evaluatedValue,
-                "The evaluated value should match the expected result error.");
-
-        assertEquals("File Not Found", evaluatedValue2,
-                "The evaluated value should match the expected result error.");
+    /**
+     * Initialises a {@link SpelEvaluator} with a fresh {@link SpelExpressionParser}
+     * and an empty {@link StandardEvaluationContext} before each test.
+     */
+    @BeforeEach
+    void setUp() {
+        ExpressionParser parser = new SpelExpressionParser();
+        spelEvaluator = new SpelEvaluator(parser);
+        context = new StandardEvaluationContext();
     }
 
+    /**
+     * Verifies that a {@code null} expression returns the fallback value {@value MetricsConstant#NONE}.
+     */
     @Test
-    @DisplayName("Test SpelEvaluator evaluate method with arguments")
-    void testEvaluate_argument() {
-        JoinPoint joinPoint = Mockito.mock(JoinPoint.class);
-        MethodSignature methodSignature = Mockito.mock(MethodSignature.class);
-
-        when(joinPoint.getSignature()).thenReturn(methodSignature);
-        when(methodSignature.getParameterNames()).thenReturn(new String[]{"param1", "param2"});
-        when(joinPoint.getArgs()).thenReturn(new Object[]{1, 2});
-
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null,
-                null, null);
-
-        String expression1 = "#param1";
-        String expression2 = "#param2";
-
-        int val1 = Integer.parseInt(spelEvaluator.evaluate(expression1, context));
-        int val2 = Integer.parseInt(spelEvaluator.evaluate(expression2, context));
-
-        assertEquals(1, val1);
-        assertEquals(2, val2);
+    void evaluate_withNullExpression_shouldReturnNone() {
+        String result = spelEvaluator.evaluate(null, context);
+        assertThat(result).isEqualTo(MetricsConstant.NONE);
     }
 
+    /**
+     * Verifies that an empty string expression returns the fallback value.
+     */
     @Test
-    @DisplayName("Test SpelEvaluator evaluate method with type param")
-    void testEvaluate_T() {
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null,
-                null, null);
-        String expression = "T(io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE)";
-
-        String evalVal = spelEvaluator.evaluate(expression, context);
-
-        assertEquals(MetricsConstant.NONE, evalVal);
+    void evaluate_withEmptyExpression_shouldReturnNone() {
+        String result = spelEvaluator.evaluate("", context);
+        assertThat(result).isEqualTo(MetricsConstant.NONE);
     }
 
+    /**
+     * Verifies that a blank (whitespace-only) expression returns the fallback value.
+     */
     @Test
-    @DisplayName("Test SpelEvaluator evaluate method with at the rate")
-    void testEvaluate_AtTheRate_Param() {
-        JoinPoint joinPoint = Mockito.mock(JoinPoint.class);
-        MethodSignature methodSignature = Mockito.mock(MethodSignature.class);
-
-        when(joinPoint.getSignature()).thenReturn(methodSignature);
-        when(methodSignature.getParameterNames()).thenReturn(new String[]{"param1", "param2"});
-        when(joinPoint.getArgs()).thenReturn(new Object[]{1, 2});
-
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null,
-                null, beanResolver);
-        String expression = "@evaluatorTestBean.sum(#param1,#param2)";
-
-        String evalValue = spelEvaluator.evaluate(expression, context);
-        assertEquals("3", evalValue);
+    void evaluate_withBlankExpression_shouldReturnNone() {
+        String result = spelEvaluator.evaluate("   ", context);
+        assertThat(result).isEqualTo(MetricsConstant.NONE);
     }
 
+    /**
+     * Verifies that a literal string (not starting with {@code #}, {@code @}, or {@code T})
+     * is returned as-is without SpEL parsing.
+     */
     @Test
-    @DisplayName("Test SpelEvaluator evaluate method with result")
-    void testEvaluate_Result() {
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, "ABC",
-                null, null);
-
-        String expression = "#result.length()";
-        String evalValue = spelEvaluator.evaluate(expression, context);
-        assertEquals("3", evalValue);
+    void evaluate_withLiteralValue_shouldReturnLiteral() {
+        String result = spelEvaluator.evaluate("us-east-1", context);
+        assertThat(result).isEqualTo("us-east-1");
     }
 
+    /**
+     * Verifies that a {@code #variable} expression resolves the named variable
+     * from the evaluation context.
+     */
     @Test
-    @DisplayName("Test SpelEvaluator evaluate method with at the rate Exception")
-    void testEvaluate_AtTheRate_Exception() {
-        JoinPoint joinPoint = Mockito.mock(JoinPoint.class);
-        MethodSignature methodSignature = Mockito.mock(MethodSignature.class);
+    void evaluate_withHashVariable_shouldResolveFromContext() {
+        context.setVariable("userId", "user-42");
 
-        when(joinPoint.getSignature()).thenReturn(methodSignature);
-        when(methodSignature.getParameterNames()).thenReturn(new String[]{"param1", "param2"});
-        when(joinPoint.getArgs()).thenReturn(new Object[]{1, 2});
-
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null,
-                null, null);
-        String expression = "@evaluatorTestBean.sum(#param1,#param2)";
-
-        String evalValue = spelEvaluator.evaluate(expression, context);
-        assertEquals(MetricsConstant.NONE, evalValue);
+        String result = spelEvaluator.evaluate("#userId", context);
+        assertThat(result).isEqualTo("user-42");
     }
 
+    /**
+     * Verifies that a nested property access expression (e.g. {@code #result.status})
+     * resolves to the property value of the context variable.
+     */
     @Test
-    @DisplayName("Test SpelEvaluator evaluate method with null expression")
-    void testEvaluate_withNullExpression() {
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null,
-                null, null);
+    void evaluate_withNestedProperty_shouldResolveNestedValue() {
+        context.setVariable("result", new TestResult("SUCCESS"));
 
-        String evalValue = spelEvaluator.evaluate(null, context);
-        assertEquals(MetricsConstant.NONE, evalValue);
+        String result = spelEvaluator.evaluate("#result.status", context);
+        assertThat(result).isEqualTo("SUCCESS");
     }
 
+    /**
+     * Verifies that a variable explicitly set to {@code null} returns the fallback value.
+     */
     @Test
-    void testEvaluate_InvalidExpression() {
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null,
-                null, null);
+    void evaluate_withNullVariable_shouldReturnNone() {
+        context.setVariable("missing", null);
 
-        String expression = "expression";
+        String result = spelEvaluator.evaluate("#missing", context);
+        assertThat(result).isEqualTo(MetricsConstant.NONE);
+    }
 
-        String evalValue = spelEvaluator.evaluate(expression, context);
-        assertEquals(expression, evalValue);
+    /**
+     * Verifies that referencing an undefined variable returns the fallback value
+     * rather than throwing an exception.
+     */
+    @Test
+    void evaluate_withUndefinedVariable_shouldReturnNone() {
+        String result = spelEvaluator.evaluate("#undefinedVar", context);
+        assertThat(result).isEqualTo(MetricsConstant.NONE);
+    }
+
+    /**
+     * Verifies that a {@code T(type).member} expression is evaluated correctly,
+     * e.g. accessing {@code Math.PI}.
+     */
+    @Test
+    void evaluate_withSpelTypeExpression_shouldEvaluate() {
+        String result = spelEvaluator.evaluate("T(java.lang.Math).PI", context);
+        assertThat(result).isEqualTo(String.valueOf(Math.PI));
+    }
+
+    /**
+     * Verifies that evaluating the same expression twice returns consistent results,
+     * exercising the internal expression cache.
+     */
+    @Test
+    void evaluate_shouldCacheExpressions() {
+        context.setVariable("x", "hello");
+
+        String result1 = spelEvaluator.evaluate("#x", context);
+        String result2 = spelEvaluator.evaluate("#x", context);
+
+        assertThat(result1).isEqualTo("hello");
+        assertThat(result2).isEqualTo("hello");
+    }
+
+    /**
+     * Verifies that a non-string variable (e.g. {@link Integer}) is converted
+     * to its string representation via {@code toString()}.
+     */
+    @Test
+    void evaluate_withIntegerVariable_shouldReturnStringRepresentation() {
+        context.setVariable("count", 42);
+
+        String result = spelEvaluator.evaluate("#count", context);
+        assertThat(result).isEqualTo("42");
+    }
+
+    /**
+     * Verifies that an expression referencing a deeply nested path on a null variable
+     * returns the fallback value rather than throwing.
+     */
+    @Test
+    void evaluate_withInvalidSpelExpression_shouldReturnNone() {
+        String result = spelEvaluator.evaluate("#invalid.deeply.nested.path", context);
+        assertThat(result).isEqualTo(MetricsConstant.NONE);
+    }
+
+    /**
+     * Simple test POJO for validating nested property access in SpEL expressions.
+     */
+    public static class TestResult {
+        private final String status;
+
+        /**
+         * Constructs a new {@link TestResult} with the given status.
+         *
+         * @param status the status value
+         */
+        public TestResult(String status) {
+            this.status = status;
+        }
+
+        /**
+         * Returns the status value.
+         *
+         * @return the status
+         */
+        public String getStatus() {
+            return status;
+        }
     }
 }

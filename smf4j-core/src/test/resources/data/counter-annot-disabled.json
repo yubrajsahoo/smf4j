@@ -1,0 +1,6 @@
+{
+  "name": "disabled.counter",
+  "description": "Disabled",
+  "increment": 1,
+  "enable": false
+}

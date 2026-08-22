@@ -1,0 +1,10 @@
+{
+  "name": "tagged.counter",
+  "description": "Tagged",
+  "tags": {
+    "env": "production",
+    "region": "#region"
+  },
+  "increment": 1,
+  "enable": true
+}

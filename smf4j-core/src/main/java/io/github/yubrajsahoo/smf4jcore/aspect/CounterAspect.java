@@ -7,6 +7,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.expression.BeanResolver;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
@@ -29,14 +30,16 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 public class CounterAspect {
 
     private final MetricsService metricsService;
+    private final BeanResolver beanResolver;
 
     /**
      * Constructs a new {@link CounterAspect} with the specified {@link MetricsService}.
      *
      * @param metricsService the service responsible for processing and recording metrics
      */
-    public CounterAspect(MetricsService metricsService) {
+    public CounterAspect(MetricsService metricsService, BeanResolver beanResolver) {
         this.metricsService = metricsService;
+        this.beanResolver = beanResolver;
     }
 
     /**
@@ -56,7 +59,7 @@ public class CounterAspect {
     )
     public void captureReturn(JoinPoint joinPoint, Counter counter, Object result) {
         StandardEvaluationContext standardEvaluationContext =
-                SpelContextBuilder.buildContext(joinPoint, result, null);
+                SpelContextBuilder.buildContext(joinPoint, result, null, beanResolver);
 
         metricsService.record(counter, standardEvaluationContext);
     }
@@ -78,7 +81,7 @@ public class CounterAspect {
     )
     public void captureException(JoinPoint joinPoint, Counter counter, Throwable exception) {
         StandardEvaluationContext standardEvaluationContext =
-                SpelContextBuilder.buildContext(joinPoint, null, exception);
+                SpelContextBuilder.buildContext(joinPoint, null, exception, beanResolver);
 
         metricsService.record(counter, standardEvaluationContext);
     }

@@ -1,6 +1,7 @@
 package io.github.yubrajsahoo.smf4jcore.config;
 
 import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
+import io.github.yubrajsahoo.smf4jcore.helper.EvaluatorTestBean;
 import io.github.yubrajsahoo.smf4jcore.meter.service.impl.CounterMeterService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -29,5 +30,10 @@ public class Smf4jCoreMockConfig {
     @Bean(name = "originalCounterMeterService")
     public CounterMeterService originalCounterMeterService(MeterRegistry meterRegistry) {
         return new CounterMeterService(meterRegistry);
+    }
+
+    @Bean
+    public EvaluatorTestBean evaluatorTestBean() {
+        return new EvaluatorTestBean();
     }
 }

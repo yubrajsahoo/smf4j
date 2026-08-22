@@ -2,7 +2,10 @@ package io.github.yubrajsahoo.smf4jcore.spel;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.expression.BeanResolver;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+
+import java.util.Objects;
 
 /**
  * Builder utility for constructing and populating {@link StandardEvaluationContext} instances
@@ -40,10 +43,33 @@ public final class SpelContextBuilder {
      */
     public static StandardEvaluationContext buildContext(JoinPoint joinPoint,
                                                          Object result,
-                                                         Throwable error) {
+                                                         Throwable error,
+                                                         BeanResolver resolver) {
 
         StandardEvaluationContext context = new StandardEvaluationContext();
 
+        if (Objects.nonNull(resolver)) {
+            context.setBeanResolver(resolver);
+        }
+
+        updateMethodArguments(joinPoint, context);
+        Throwable rootCause = error != null
+                ? getRootCause(error)
+                : null;
+
+        context.setVariable("result", result);
+        context.setVariable("error", error);
+        context.setVariable("rootError", rootCause);
+        return context;
+    }
+
+    /**
+     * Method to update method arguments in context.
+     *
+     * @param joinPoint the joinpoint.
+     * @param context   the context
+     */
+    private static void updateMethodArguments(JoinPoint joinPoint, StandardEvaluationContext context) {
         if (joinPoint != null && joinPoint.getSignature() instanceof MethodSignature signature) {
             String[] parameterNames = signature.getParameterNames();
             Object[] arguments = joinPoint.getArgs();
@@ -54,9 +80,18 @@ public final class SpelContextBuilder {
                 }
             }
         }
+    }
 
-        context.setVariable("result", result);
-        context.setVariable("error", error);
-        return context;
+    /**
+     * Recursively retrieves the root cause of a given {@link Throwable}.
+     *
+     * @param error the exception from which to extract the root cause; may be {@code null}
+     * @return the root cause of the exception, or {@code null} if the exception is null or has no cause
+     */
+    private static Throwable getRootCause(Throwable error) {
+        while (error.getCause() != null) {
+            error = error.getCause();
+        }
+        return error;
     }
 }

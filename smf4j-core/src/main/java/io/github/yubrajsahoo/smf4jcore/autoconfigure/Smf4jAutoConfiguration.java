@@ -12,8 +12,11 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.expression.BeanResolver;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
@@ -129,7 +132,19 @@ public class Smf4jAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(CounterAspect.class)
-    public CounterAspect counterAspect(MetricsService metricsService) {
-        return new CounterAspect(metricsService);
+    public CounterAspect counterAspect(MetricsService metricsService, BeanResolver beanResolver) {
+        return new CounterAspect(metricsService, beanResolver);
+    }
+
+    /**
+     * Create a {@link BeanResolver} bean to resolve bean for metrics.
+     *
+     * @param applicationContext the application context
+     * @return the bean resolver
+     */
+    @Bean
+    @ConditionalOnMissingBean(BeanResolver.class)
+    public BeanResolver smf4jBeanResolver(ApplicationContext applicationContext) {
+        return new BeanFactoryResolver(applicationContext);
     }
 }

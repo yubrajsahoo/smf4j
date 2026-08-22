@@ -1,3 +1,22 @@
+
+/*
+ *
+ *  * Copyright 2024 Yubraj Sahoo
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
 package io.github.yubrajsahoo.smf4jcore.aspect;
 
 import io.github.yubrajsahoo.smf4jcore.annotation.Counter;
@@ -7,6 +26,8 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.expression.BeanResolver;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
@@ -28,6 +49,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
  */
 @Aspect
 public class CounterAspect {
+    private static final Logger log = LoggerFactory.getLogger(CounterAspect.class);
 
     private final MetricsService metricsService;
     private final BeanResolver beanResolver;
@@ -58,10 +80,14 @@ public class CounterAspect {
             returning = "result"
     )
     public void captureReturn(JoinPoint joinPoint, Counter counter, Object result) {
-        StandardEvaluationContext standardEvaluationContext =
-                SpelContextBuilder.buildContext(joinPoint, result, null, beanResolver);
+        try {
+            StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
+                    .buildContext(joinPoint, result, null, beanResolver);
 
-        metricsService.record(counter, standardEvaluationContext);
+            metricsService.record(counter, standardEvaluationContext);
+        } catch (Throwable throwable) {
+            log.error("Error while capturing Counter Metrics from Return: {}", throwable.getMessage(), throwable);
+        }
     }
 
     /**
@@ -80,9 +106,13 @@ public class CounterAspect {
             throwing = "exception"
     )
     public void captureException(JoinPoint joinPoint, Counter counter, Throwable exception) {
-        StandardEvaluationContext standardEvaluationContext =
-                SpelContextBuilder.buildContext(joinPoint, null, exception, beanResolver);
+        try {
+            StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
+                    .buildContext(joinPoint, null, exception, beanResolver);
 
-        metricsService.record(counter, standardEvaluationContext);
+            metricsService.record(counter, standardEvaluationContext);
+        } catch (Throwable throwable) {
+            log.error("Error while capturing Counter Metrics from Exception: {}", throwable.getMessage(), throwable);
+        }
     }
 }

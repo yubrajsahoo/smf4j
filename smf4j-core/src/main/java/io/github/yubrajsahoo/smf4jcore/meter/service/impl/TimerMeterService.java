@@ -16,32 +16,49 @@
  *
  */
 
-package io.github.yubrajsahoo.smf4jcore.meter.service;
+package io.github.yubrajsahoo.smf4jcore.meter.service.impl;
 
 import io.github.yubrajsahoo.smf4jcore.domain.Metrics;
 import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
+import io.github.yubrajsahoo.smf4jcore.meter.service.MeterService;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
 /**
- * Service interface for recording metric data into underlying meter registries (e.g. Micrometer).
+ * Implementation of {@link MeterService} specifically designed to handle {@link MetricsType#TIMER} metrics.
  * <p>
- * Implementations are specialized to handle a specific {@link MetricsType} (such as {@link MetricsType#COUNTER}).
+ * This service uses a {@link MeterRegistry} to start timing samples and record execution durations.
+ * It provides the core functionality to interact with the underlying Micrometer registry for timer metrics.
  * </p>
  *
  * @author Yubraj Sahoo
  * @version 0.0.1
- * @see io.github.yubrajsahoo.smf4jcore.meter.service.impl.CounterMeterService
- * @see io.github.yubrajsahoo.smf4jcore.factory.MeterFactory
+ * @see MeterService
  * @since 0.0.1
  */
-public interface MeterService {
+public class TimerMeterService implements MeterService {
+    private static final MetricsType METRICS_TYPE = MetricsType.TIMER;
+
+    private final MeterRegistry meterRegistry;
+
+    /**
+     * Constructs a new {@code TimerMeterService} with the specified {@link MeterRegistry}.
+     *
+     * @param meterRegistry the micrometer registry used for recording timer metrics
+     */
+    public TimerMeterService(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     /**
      * Gets the {@link MetricsType} supported by this service implementation.
      *
      * @return the supported {@link MetricsType}
      */
-    MetricsType getType();
+    @Override
+    public MetricsType getType() {
+        return METRICS_TYPE;
+    }
 
     /**
      * Starts a new {@link Timer.Sample} to measure execution time.
@@ -54,8 +71,9 @@ public interface MeterService {
      * @return a new {@link Timer.Sample} instance
      * @throws IllegalArgumentException if the operation is not supported by the implementation
      */
-    default Timer.Sample start() {
-        throw new IllegalArgumentException("Implementation not Present");
+    @Override
+    public Timer.Sample start() {
+        return Timer.start(meterRegistry);
     }
 
     /**
@@ -64,5 +82,8 @@ public interface MeterService {
      * @param metrics the metric object containing name, tags, description, and values to record
      * @throws IllegalArgumentException if the provided metric object is null or incompatible with this meter service
      */
-    void record(Metrics metrics);
+    @Override
+    public void record(Metrics metrics) {
+
+    }
 }

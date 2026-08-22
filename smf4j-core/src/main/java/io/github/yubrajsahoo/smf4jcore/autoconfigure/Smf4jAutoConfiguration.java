@@ -1,8 +1,27 @@
+/*
+ *
+ *  * Copyright 2024 Yubraj Sahoo
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
 package io.github.yubrajsahoo.smf4jcore.autoconfigure;
 
 import io.github.yubrajsahoo.smf4jcore.aspect.CounterAspect;
 import io.github.yubrajsahoo.smf4jcore.factory.MeterFactory;
 import io.github.yubrajsahoo.smf4jcore.meter.service.MeterService;
+import io.github.yubrajsahoo.smf4jcore.meter.service.impl.TimerMeterService;
 import io.github.yubrajsahoo.smf4jcore.meter.service.impl.CounterMeterService;
 import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
 import io.github.yubrajsahoo.smf4jcore.service.impl.MetricsServiceImpl;
@@ -33,6 +52,7 @@ import java.util.List;
  *   <li>{@link ExpressionParser} (defaults to {@link SpelExpressionParser})</li>
  *   <li>{@link SpelEvaluator}</li>
  *   <li>{@link CounterMeterService}</li>
+ *   <li>{@link TimerMeterService}</li>
  *   <li>{@link MeterFactory}</li>
  *   <li>{@link MetricsService} (backed by {@link MetricsServiceImpl})</li>
  *   <li>{@link SpelContextBuilder}</li>
@@ -97,6 +117,18 @@ public class Smf4jAutoConfiguration {
     @ConditionalOnMissingBean(CounterMeterService.class)
     public CounterMeterService counterMeterService(MeterRegistry meterRegistry) {
         return new CounterMeterService(meterRegistry);
+    }
+
+    /**
+     * Creates a {@link TimerMeterService} bean if none is defined.
+     *
+     * @param meterRegistry the Micrometer meter registry
+     * @return a new {@link TimerMeterService} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(TimerMeterService.class)
+    public TimerMeterService timerMeterService(MeterRegistry meterRegistry) {
+        return new TimerMeterService(meterRegistry);
     }
 
     /**

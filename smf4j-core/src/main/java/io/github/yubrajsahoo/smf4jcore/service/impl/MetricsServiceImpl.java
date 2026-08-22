@@ -1,3 +1,21 @@
+/*
+ *
+ *  * Copyright 2024 Yubraj Sahoo
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
 package io.github.yubrajsahoo.smf4jcore.service.impl;
 
 import io.github.yubrajsahoo.smf4jcore.annotation.Counter;
@@ -9,6 +27,7 @@ import io.github.yubrajsahoo.smf4jcore.spel.SpelEvaluator;
 import io.github.yubrajsahoo.smf4jcore.utils.MetricsLogger;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -52,6 +71,23 @@ public class MetricsServiceImpl implements MetricsService {
     }
 
     /**
+     * Starts a new {@link io.micrometer.core.instrument.Timer.Sample} to measure execution time.
+     * <p>
+     * This method is a convenience wrapper for initiating a timing sample which
+     * can later be stopped and recorded against a specific timer metric.
+     * </p>
+     *
+     * @return a new {@link io.micrometer.core.instrument.Timer.Sample} instance
+     */
+    @Override
+    public io.micrometer.core.instrument.Timer.Sample start() {
+        return meterFactory.getMeterService(MetricsType.TIMER)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No MeterService found for metrics type: " + MetricsType.TIMER)
+                ).start();
+    }
+
+    /**
      * Records a counter metric by evaluating dynamic tag expressions with SpEL,
      * building {@link CounterMetrics}, logging the metric details, and delegating
      * to the corresponding {@link io.github.yubrajsahoo.smf4jcore.meter.service.MeterService}.
@@ -90,6 +126,24 @@ public class MetricsServiceImpl implements MetricsService {
         } catch (Throwable throwable) {
             log.error("Error while recording counter metric '{}': {}", counter.name(), throwable.getMessage(), throwable);
         }
+    }
+
+    /**
+     * Processes and records a timer metric based on the metadata in {@link Timer}
+     * and the given SpEL {@link StandardEvaluationContext}.
+     *
+     * @param timer   the {@link Timer} annotation containing metric definition and metadata
+     * @param context the SpEL evaluation context providing variables for dynamic tag resolution
+     */
+    @Override
+    public void record(io.github.yubrajsahoo.smf4jcore.annotation.Timer timer, StandardEvaluationContext context) {
+        if (timer == null) {
+            log.warn("Cannot record metrics for null timer annotation");
+            return;
+        }
+
+        Tags tags = evaluateTags(timer.tags(), context);
+
     }
 
     /**

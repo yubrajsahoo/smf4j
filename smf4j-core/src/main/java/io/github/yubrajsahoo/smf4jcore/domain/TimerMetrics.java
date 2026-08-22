@@ -54,6 +54,17 @@ public class TimerMetrics extends Metrics {
     }
 
     /**
+     * A fluent builder for creating and configuring {@link TimerMetrics} instances.
+     *
+     * @author Yubraj Sahoo
+     * @since 0.0.1
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+
+    /**
      * Builder class for constructing {@link TimerMetrics} instances.
      */
     public static class Builder {

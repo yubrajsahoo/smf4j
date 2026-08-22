@@ -19,6 +19,7 @@
 package io.github.yubrajsahoo.smf4jcore.autoconfigure;
 
 import io.github.yubrajsahoo.smf4jcore.aspect.CounterAspect;
+import io.github.yubrajsahoo.smf4jcore.aspect.TimerAspect;
 import io.github.yubrajsahoo.smf4jcore.factory.MeterFactory;
 import io.github.yubrajsahoo.smf4jcore.meter.service.MeterService;
 import io.github.yubrajsahoo.smf4jcore.meter.service.impl.TimerMeterService;
@@ -166,6 +167,19 @@ public class Smf4jAutoConfiguration {
     @ConditionalOnMissingBean(CounterAspect.class)
     public CounterAspect counterAspect(MetricsService metricsService, BeanResolver beanResolver) {
         return new CounterAspect(metricsService, beanResolver);
+    }
+
+    /**
+     * Creates a {@link TimerAspect} bean to intercept methods annotated with {@link io.github.yubrajsahoo.smf4jcore.annotation.Timer}.
+     *
+     * @param metricsService the metrics service used to process intercepted metric events
+     * @param beanResolver   the bean resolver for resolving Spring beans in SpEL expressions
+     * @return a new {@link TimerAspect} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(TimerAspect.class)
+    public TimerAspect timerAspect(MetricsService metricsService, BeanResolver beanResolver) {
+        return new TimerAspect(metricsService, beanResolver);
     }
 
     /**

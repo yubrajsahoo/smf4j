@@ -56,8 +56,9 @@ public interface MetricsService {
      * Processes and records a timer metric based on the metadata in {@link Timer}
      * and the given SpEL {@link StandardEvaluationContext}.
      *
+     * @param sample the {@link io.micrometer.core.instrument.Timer.Sample} to capture letency
      * @param timer   the {@link Timer} annotation containing metric definition and metadata
      * @param context the SpEL evaluation context providing variables for dynamic tag resolution
      */
-    void record(Timer timer, StandardEvaluationContext context);
+    void record(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context);
 }

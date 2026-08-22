@@ -212,4 +212,86 @@ class MetricsServiceImplTest {
         metricsService.record(counter, context);
     }
 
+    /**
+     * Verifies that start() delegates to the timer meter service to create a sample.
+     */
+    @Test
+    void start_shouldDelegateToTimerMeterService() {
+        when(meterFactory.getMeterService(MetricsType.TIMER)).thenReturn(Optional.of(meterService));
+        io.micrometer.core.instrument.Timer.Sample mockSample = mock(io.micrometer.core.instrument.Timer.Sample.class);
+        when(meterService.start()).thenReturn(mockSample);
+
+        io.micrometer.core.instrument.Timer.Sample result = metricsService.start();
+
+        assertThat(result).isSameAs(mockSample);
+        verify(meterFactory).getMeterService(MetricsType.TIMER);
+        verify(meterService).start();
+    }
+
+    /**
+     * Verifies that start() throws IllegalStateException if no timer meter service is found.
+     */
+    @Test
+    void start_whenNoTimerMeterServiceFound_shouldThrowIllegalStateException() {
+        when(meterFactory.getMeterService(MetricsType.TIMER)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> metricsService.start())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No MeterService found for metrics type: TIMER");
+    }
+
+    /**
+     * Verifies that passing a null Timer annotation returns early.
+     */
+    @Test
+    void recordTimer_withNullTimer_shouldNotThrow() {
+        metricsService.record(mock(io.micrometer.core.instrument.Timer.Sample.class), null, new StandardEvaluationContext());
+
+        verifyNoInteractions(meterFactory);
+    }
+
+    /**
+     * Verifies that an enabled timer delegates to the resolved meter service.
+     */
+    @Test
+    void recordTimer_withEnabledTimer_shouldDelegateToMeterService() {
+        io.github.yubrajsahoo.smf4jcore.annotation.Timer timer = mock(io.github.yubrajsahoo.smf4jcore.annotation.Timer.class);
+        when(timer.name()).thenReturn("test.timer");
+        when(timer.description()).thenReturn("desc");
+        when(timer.enable()).thenReturn(true);
+        when(timer.tags()).thenReturn(new io.github.yubrajsahoo.smf4jcore.annotation.Tags[0]);
+
+        io.micrometer.core.instrument.Timer.Sample sample = mock(io.micrometer.core.instrument.Timer.Sample.class);
+        StandardEvaluationContext context = new StandardEvaluationContext();
+
+        when(meterFactory.getMeterService(MetricsType.TIMER)).thenReturn(Optional.of(meterService));
+
+        metricsService.record(sample, timer, context);
+
+        ArgumentCaptor<io.github.yubrajsahoo.smf4jcore.domain.Metrics> captor =
+                ArgumentCaptor.forClass(io.github.yubrajsahoo.smf4jcore.domain.Metrics.class);
+        verify(meterService).record(captor.capture());
+
+        io.github.yubrajsahoo.smf4jcore.domain.Metrics recorded = captor.getValue();
+        assertThat(recorded).isInstanceOf(io.github.yubrajsahoo.smf4jcore.domain.TimerMetrics.class);
+        assertThat(recorded.getName()).isEqualTo("test.timer");
+        assertThat(((io.github.yubrajsahoo.smf4jcore.domain.TimerMetrics) recorded).getSample()).isSameAs(sample);
+    }
+
+    /**
+     * Verifies that a disabled timer skips recording entirely.
+     */
+    @Test
+    void recordTimer_withDisabledTimer_shouldNotDelegateToMeterService() {
+        io.github.yubrajsahoo.smf4jcore.annotation.Timer timer = mock(io.github.yubrajsahoo.smf4jcore.annotation.Timer.class);
+        when(timer.name()).thenReturn("test.timer");
+        when(timer.description()).thenReturn("desc");
+        when(timer.enable()).thenReturn(false);
+        when(timer.tags()).thenReturn(new io.github.yubrajsahoo.smf4jcore.annotation.Tags[0]);
+
+        metricsService.record(mock(io.micrometer.core.instrument.Timer.Sample.class), timer, new StandardEvaluationContext());
+
+        verify(meterFactory, never()).getMeterService(any());
+    }
+
 }

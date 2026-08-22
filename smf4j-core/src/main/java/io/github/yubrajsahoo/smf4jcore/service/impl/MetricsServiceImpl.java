@@ -19,7 +19,9 @@
 package io.github.yubrajsahoo.smf4jcore.service.impl;
 
 import io.github.yubrajsahoo.smf4jcore.annotation.Counter;
+import io.github.yubrajsahoo.smf4jcore.annotation.Timer;
 import io.github.yubrajsahoo.smf4jcore.domain.CounterMetrics;
+import io.github.yubrajsahoo.smf4jcore.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
 import io.github.yubrajsahoo.smf4jcore.factory.MeterFactory;
 import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
@@ -27,7 +29,6 @@ import io.github.yubrajsahoo.smf4jcore.spel.SpelEvaluator;
 import io.github.yubrajsahoo.smf4jcore.utils.MetricsLogger;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -132,18 +133,38 @@ public class MetricsServiceImpl implements MetricsService {
      * Processes and records a timer metric based on the metadata in {@link Timer}
      * and the given SpEL {@link StandardEvaluationContext}.
      *
+     * @param sample  the {@link io.micrometer.core.instrument.Timer.Sample} to capture letency
      * @param timer   the {@link Timer} annotation containing metric definition and metadata
      * @param context the SpEL evaluation context providing variables for dynamic tag resolution
      */
     @Override
-    public void record(io.github.yubrajsahoo.smf4jcore.annotation.Timer timer, StandardEvaluationContext context) {
+    public void record(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context) {
         if (timer == null) {
             log.warn("Cannot record metrics for null timer annotation");
             return;
         }
 
-        Tags tags = evaluateTags(timer.tags(), context);
+        try {
+            Tags tags = evaluateTags(timer.tags(), context);
 
+            TimerMetrics metrics = TimerMetrics.builder()
+                    .name(timer.name())
+                    .description(timer.description())
+                    .tags(tags)
+                    .enabled(timer.enable())
+                    .sample(sample)
+                    .build();
+
+            if (metrics.isEnabled()) {
+                meterFactory.getMeterService(MetricsType.TIMER)
+                        .ifPresentOrElse(
+                                meterService -> meterService.record(metrics),
+                                () -> log.warn("No MeterService found for metrics type: {}", MetricsType.TIMER)
+                        );
+            }
+        } catch (Exception exception) {
+            log.error("Error while recording timer metric '{}': {}", timer.name(), exception.getMessage(), exception);
+        }
     }
 
     /**

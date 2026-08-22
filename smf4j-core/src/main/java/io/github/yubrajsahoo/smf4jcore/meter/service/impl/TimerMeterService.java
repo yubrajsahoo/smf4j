@@ -19,6 +19,7 @@
 package io.github.yubrajsahoo.smf4jcore.meter.service.impl;
 
 import io.github.yubrajsahoo.smf4jcore.domain.Metrics;
+import io.github.yubrajsahoo.smf4jcore.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
 import io.github.yubrajsahoo.smf4jcore.meter.service.MeterService;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -84,6 +85,17 @@ public class TimerMeterService implements MeterService {
      */
     @Override
     public void record(Metrics metrics) {
-
+        if (metrics instanceof TimerMetrics timerMetrics) {
+            Timer timer = Timer.builder(timerMetrics.getName())
+                    .description(timerMetrics.getDescription())
+                    .tags(timerMetrics.getTags())
+                    .register(meterRegistry);
+            
+            if (timerMetrics.getSample() != null) {
+                timerMetrics.getSample().stop(timer);
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid metrics type for TimerMeterService");
+        }
     }
 }

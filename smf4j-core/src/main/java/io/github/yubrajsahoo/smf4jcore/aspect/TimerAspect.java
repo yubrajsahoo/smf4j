@@ -29,32 +29,77 @@ import org.slf4j.LoggerFactory;
 import org.springframework.expression.BeanResolver;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
+/**
+ * Aspect that intercepts methods annotated with {@link Timer} to record execution time metrics.
+ * <p>
+ * Uses {@link MetricsService} to start a timing sample before the method execution and stops it
+ * afterward, recording the elapsed duration along with any dynamically resolved tags via SpEL expressions.
+ * </p>
+ *
+ * @author Yubraj Sahoo
+ * @version 0.0.1
+ * @see Timer
+ * @see MetricsService
+ * @since 0.0.1
+ */
 @Aspect
 public class TimerAspect {
     private static final Logger log = LoggerFactory.getLogger(TimerAspect.class);
 
-    private final BeanResolver beanResolver;
     private final MetricsService metricsService;
+    private final BeanResolver beanResolver;
 
-    public TimerAspect(BeanResolver beanResolver, MetricsService metricsService) {
-        this.beanResolver = beanResolver;
+    /**
+     * Constructs a new {@link TimerAspect} with the specified metrics service and bean resolver.
+     *
+     * @param metricsService the service responsible for processing and recording metrics
+     * @param beanResolver   the resolver used for evaluating Spring beans in SpEL expressions
+     */
+    public TimerAspect(MetricsService metricsService, BeanResolver beanResolver) {
         this.metricsService = metricsService;
+        this.beanResolver = beanResolver;
     }
 
+    /**
+     * Around advice that intercepts methods annotated with {@link Timer}.
+     * <p>
+     * Wraps the method execution to ensure metrics are recorded even if exceptions occur.
+     * If an error happens specifically during the metric recording process, it is logged and the method result is unaffected.
+     * </p>
+     *
+     * @param joinPoint the join point representing the intercepted method execution
+     * @param timer     the {@link Timer} annotation metadata from the intercepted method
+     * @return the result of the intercepted method execution
+     * @throws Throwable if the underlying method throws an exception
+     */
     @Around("@annotation(timer)")
     public Object aroundTimer(ProceedingJoinPoint joinPoint, Timer timer) throws Throwable {
-        try {
-            return record(joinPoint, timer);
-        } catch (Throwable e) {
-            log.error("Error while Capturing Timer Metrics: {}", e.getMessage(), e);
-        }
-        return null;
+        return record(joinPoint, timer);
     }
 
+    /**
+     * Executes the target method and records the execution duration.
+     * <p>
+     * A timing sample is started before execution. Once the method completes (normally or exceptionally),
+     * a SpEL context is built and the duration is recorded via the {@link MetricsService}.
+     * </p>
+     *
+     * @param joinPoint the join point representing the method execution
+     * @param timer     the {@link Timer} annotation metadata
+     * @return the result of the method execution
+     * @throws Throwable if the underlying method throws an exception
+     */
     private Object record(ProceedingJoinPoint joinPoint, Timer timer) throws Throwable {
         Object result = null;
         Throwable error = null;
-        io.micrometer.core.instrument.Timer.Sample sample = metricsService.start();
+        io.micrometer.core.instrument.Timer.Sample sample = null;
+        
+        try {
+            sample = metricsService.start();
+        } catch (Throwable t) {
+            log.error("Error starting Timer metric sample: {}", t.getMessage(), t);
+        }
+
         try {
             result = joinPoint.proceed();
             return result;
@@ -62,9 +107,15 @@ public class TimerAspect {
             error = e;
             throw e;
         } finally {
-            StandardEvaluationContext context = SpelContextBuilder.buildContext(
-                    joinPoint, result, error, beanResolver);
-            metricsService.record(timer, context);
+            if (sample != null) {
+                try {
+                    StandardEvaluationContext context = SpelContextBuilder.buildContext(
+                            joinPoint, result, error, beanResolver);
+                    metricsService.record(sample, timer, context);
+                } catch (Throwable t) {
+                    log.error("Error while recording Timer Metrics: {}", t.getMessage(), t);
+                }
+            }
         }
     }
 }

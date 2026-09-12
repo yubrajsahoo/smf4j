@@ -68,7 +68,7 @@ public class CounterAspect {
      * Advice that executes upon successful return of a method annotated with {@link Counter}.
      * <p>
      * Creates a SpEL evaluation context populated with method parameters and the return value (as {@code #result}),
-     * then invokes {@link MetricsService#record(Counter, StandardEvaluationContext)}.
+     * then invokes {@link MetricsService#recordMetrics(Counter, StandardEvaluationContext)}.
      * </p>
      *
      * @param joinPoint the AOP join point representing the method invocation
@@ -84,7 +84,7 @@ public class CounterAspect {
             StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
                     .buildContext(joinPoint, result, null, beanResolver);
 
-            metricsService.record(counter, standardEvaluationContext);
+            metricsService.recordMetrics(counter, standardEvaluationContext);
         } catch (Throwable throwable) {
             log.error("Error while capturing Counter Metrics from Return: {}", throwable.getMessage(), throwable);
         }
@@ -94,7 +94,7 @@ public class CounterAspect {
      * Advice that executes when a method annotated with {@link Counter} throws an exception.
      * <p>
      * Creates a SpEL evaluation context populated with method parameters and the thrown exception (as {@code #error}),
-     * then invokes {@link MetricsService#record(Counter, StandardEvaluationContext)}.
+     * then invokes {@link MetricsService#recordMetrics(Counter, StandardEvaluationContext)}.
      * </p>
      *
      * @param joinPoint the AOP join point representing the method invocation
@@ -110,7 +110,7 @@ public class CounterAspect {
             StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
                     .buildContext(joinPoint, null, exception, beanResolver);
 
-            metricsService.record(counter, standardEvaluationContext);
+            metricsService.recordMetrics(counter, standardEvaluationContext);
         } catch (Throwable throwable) {
             log.error("Error while capturing Counter Metrics from Exception: {}", throwable.getMessage(), throwable);
         }

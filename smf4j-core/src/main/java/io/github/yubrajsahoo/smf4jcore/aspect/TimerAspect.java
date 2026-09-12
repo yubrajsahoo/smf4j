@@ -74,7 +74,7 @@ public class TimerAspect {
      */
     @Around("@annotation(timer)")
     public Object aroundTimer(ProceedingJoinPoint joinPoint, Timer timer) throws Throwable {
-        return record(joinPoint, timer);
+        return recordMetrics(joinPoint, timer);
     }
 
     /**
@@ -89,21 +89,21 @@ public class TimerAspect {
      * @return the result of the method execution
      * @throws Throwable if the underlying method throws an exception
      */
-    private Object record(ProceedingJoinPoint joinPoint, Timer timer) throws Throwable {
+    private Object recordMetrics(ProceedingJoinPoint joinPoint, Timer timer) throws Throwable {
         Object result = null;
         Throwable error = null;
         io.micrometer.core.instrument.Timer.Sample sample = null;
         
         try {
             sample = metricsService.start();
-        } catch (Throwable t) {
-            log.error("Error starting Timer metric sample: {}", t.getMessage(), t);
+        } catch (Exception e) {
+            log.error("Error starting Timer metric sample: {}", e.getMessage(), e);
         }
 
         try {
             result = joinPoint.proceed();
             return result;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             error = e;
             throw e;
         } finally {
@@ -111,9 +111,9 @@ public class TimerAspect {
                 try {
                     StandardEvaluationContext context = SpelContextBuilder.buildContext(
                             joinPoint, result, error, beanResolver);
-                    metricsService.record(sample, timer, context);
-                } catch (Throwable t) {
-                    log.error("Error while recording Timer Metrics: {}", t.getMessage(), t);
+                    metricsService.recordMetrics(sample, timer, context);
+                } catch (Exception e) {
+                    log.error("Error while recording Timer Metrics: {}", e.getMessage(), e);
                 }
             }
         }

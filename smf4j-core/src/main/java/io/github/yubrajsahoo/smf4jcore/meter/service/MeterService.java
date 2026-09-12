@@ -64,5 +64,5 @@ public interface MeterService {
      * @param metrics the metric object containing name, tags, description, and values to record
      * @throws IllegalArgumentException if the provided metric object is null or incompatible with this meter service
      */
-    void record(Metrics metrics);
+    void recordMetrics(Metrics metrics);
 }

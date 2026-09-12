@@ -97,7 +97,7 @@ public class MetricsServiceImpl implements MetricsService {
      * @param context the SpEL evaluation context containing invocation variables
      */
     @Override
-    public void record(Counter counter, StandardEvaluationContext context) {
+    public void recordMetrics(Counter counter, StandardEvaluationContext context) {
         if (counter == null) {
             log.warn("Cannot record metrics for null Counter annotation");
             return;
@@ -121,7 +121,7 @@ public class MetricsServiceImpl implements MetricsService {
             }
             meterFactory.getMeterService(MetricsType.COUNTER)
                     .ifPresentOrElse(
-                            meterService -> meterService.record(metrics),
+                            meterService -> meterService.recordMetrics(metrics),
                             () -> log.warn("No MeterService found for metrics type: {}", MetricsType.COUNTER)
                     );
         } catch (Throwable throwable) {
@@ -138,7 +138,7 @@ public class MetricsServiceImpl implements MetricsService {
      * @param context the SpEL evaluation context providing variables for dynamic tag resolution
      */
     @Override
-    public void record(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context) {
+    public void recordMetrics(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context) {
         if (timer == null) {
             log.warn("Cannot record metrics for null timer annotation");
             return;
@@ -158,7 +158,7 @@ public class MetricsServiceImpl implements MetricsService {
             if (metrics.isEnabled()) {
                 meterFactory.getMeterService(MetricsType.TIMER)
                         .ifPresentOrElse(
-                                meterService -> meterService.record(metrics),
+                                meterService -> meterService.recordMetrics(metrics),
                                 () -> log.warn("No MeterService found for metrics type: {}", MetricsType.TIMER)
                         );
             }

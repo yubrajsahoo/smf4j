@@ -84,7 +84,7 @@ public class TimerMeterService implements MeterService {
      * @throws IllegalArgumentException if the provided metric object is null or incompatible with this meter service
      */
     @Override
-    public void record(Metrics metrics) {
+    public void recordMetrics(Metrics metrics) {
         if (metrics instanceof TimerMetrics timerMetrics) {
             Timer timer = Timer.builder(timerMetrics.getName())
                     .description(timerMetrics.getDescription())

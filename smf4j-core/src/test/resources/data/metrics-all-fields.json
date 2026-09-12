@@ -1,9 +1,0 @@
-{
-  "name": "http.requests",
-  "description": "Total HTTP requests",
-  "tags": {
-    "region": "us-east-1"
-  },
-  "increment": 3,
-  "enabled": false
-}

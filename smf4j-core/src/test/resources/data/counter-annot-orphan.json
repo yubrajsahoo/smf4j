@@ -1,6 +1,0 @@
-{
-  "name": "orphan.counter",
-  "description": "No service",
-  "increment": 1,
-  "enable": true
-}

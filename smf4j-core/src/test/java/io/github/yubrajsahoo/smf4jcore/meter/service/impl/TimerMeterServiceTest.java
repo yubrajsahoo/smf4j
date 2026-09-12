@@ -21,29 +21,51 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * accumulation across multiple invocations, tag handling, exception handling,
  * and rejection of non-{@link TimerMetrics} instances.
  * </p>
+ *
+ * @author Yubraj Sahoo
+ * @version 0.0.1
+ * @since 0.0.1
+ * @see TimerMeterService
+ * @see TimerMetrics
  */
 class TimerMeterServiceTest {
 
     private MeterRegistry meterRegistry;
     private TimerMeterService timerMeterService;
 
+    /**
+     * Creates a fresh {@link SimpleMeterRegistry} and {@link TimerMeterService}
+     * before each test to ensure test isolation.
+     */
     @BeforeEach
     void setUp() {
         meterRegistry = new SimpleMeterRegistry();
         timerMeterService = new TimerMeterService(meterRegistry);
     }
 
+    /**
+     * Verifies that {@link TimerMeterService#getType()} returns {@link MetricsType#TIMER}.
+     */
     @Test
     void getType_shouldReturnTimer() {
         assertThat(timerMeterService.getType()).isEqualTo(MetricsType.TIMER);
     }
 
+    /**
+     * Verifies that {@link TimerMeterService#start()} returns a non-null timer sample.
+     */
     @Test
     void start_shouldReturnNewSample() {
         Timer.Sample sample = timerMeterService.start();
         assertThat(sample).isNotNull();
     }
 
+    /**
+     * Verifies that recording a valid {@link TimerMetrics} registers the timer
+     * in the registry and stops the sample, recording a positive duration.
+     *
+     * @throws InterruptedException if the sleep is interrupted
+     */
     @Test
     void record_withValidTimerMetrics_shouldRegisterAndStopSample() throws InterruptedException {
         Timer.Sample sample = timerMeterService.start();
@@ -66,6 +88,10 @@ class TimerMeterServiceTest {
         assertThat(timer.getId().getDescription()).isEqualTo("Test timer");
     }
 
+    /**
+     * Verifies that recording a timer with a null sample registers the timer
+     * but does not record any duration.
+     */
     @Test
     void record_withNullSample_shouldRegisterWithoutException() {
         TimerMetrics metrics = new TimerMetrics.Builder()
@@ -81,6 +107,12 @@ class TimerMeterServiceTest {
         assertThat(timer.count()).isEqualTo(0L); // Nothing recorded
     }
 
+    /**
+     * Verifies that calling {@code record} multiple times on the same timer
+     * accumulates the count and total duration.
+     *
+     * @throws InterruptedException if the sleep is interrupted
+     */
     @Test
     void record_multipleTimes_shouldAccumulateCountAndDuration() throws InterruptedException {
         // Record 1
@@ -108,6 +140,10 @@ class TimerMeterServiceTest {
         assertThat(timer.totalTime(TimeUnit.MILLISECONDS)).isGreaterThan(10);
     }
 
+    /**
+     * Verifies that passing a non-{@link TimerMetrics} instance to {@code record}
+     * throws an {@link IllegalArgumentException}.
+     */
     @Test
     void record_withNonTimerMetrics_shouldThrowIllegalArgumentException() {
         Metrics nonTimerMetrics = new Metrics() {

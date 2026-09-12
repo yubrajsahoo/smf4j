@@ -13,9 +13,18 @@ import static org.mockito.Mockito.mock;
  * Validates default constructor initialization, setter/getter contracts,
  * fluent builder configuration, and builder method chaining.
  * </p>
+ *
+ * @author Yubraj Sahoo
+ * @version 0.0.1
+ * @since 0.0.1
+ * @see TimerMetrics
  */
 class TimerMetricsTest {
 
+    /**
+     * Verifies that a newly constructed {@link TimerMetrics} has the expected default values:
+     * {@code null} name, {@code null} description, empty tags, enabled, and {@code null} sample.
+     */
     @Test
     void defaultConstructor_shouldSetDefaultValues() {
         TimerMetrics metrics = new TimerMetrics();
@@ -27,6 +36,10 @@ class TimerMetricsTest {
         assertThat(metrics.getSample()).isNull();
     }
 
+    /**
+     * Verifies that all setters correctly store values and that the corresponding
+     * getters return the same values.
+     */
     @Test
     void settersAndGetters_shouldWorkCorrectly() {
         TimerMetrics metrics = new TimerMetrics();
@@ -46,6 +59,10 @@ class TimerMetricsTest {
         assertThat(metrics.getSample()).isEqualTo(sample);
     }
 
+    /**
+     * Verifies that the {@link TimerMetrics.Builder} correctly configures all fields
+     * when every builder method is invoked.
+     */
     @Test
     void builder_shouldBuildWithAllFields() {
         Tags tags = Tags.of("region", "us-east-1");
@@ -66,6 +83,10 @@ class TimerMetricsTest {
         assertThat(metrics.isEnabled()).isFalse();
     }
 
+    /**
+     * Verifies that the builder uses default values for unset fields
+     * (only {@code name} is explicitly set).
+     */
     @Test
     void builder_withDefaults_shouldUseDefaultValues() {
         TimerMetrics metrics = new TimerMetrics.Builder()
@@ -79,6 +100,10 @@ class TimerMetricsTest {
         assertThat(metrics.isEnabled()).isTrue();
     }
 
+    /**
+     * Verifies that each builder method returns the same {@link TimerMetrics.Builder} instance,
+     * enabling fluent method chaining.
+     */
     @Test
     void builder_shouldSupportMethodChaining() {
         TimerMetrics.Builder builder = new TimerMetrics.Builder();

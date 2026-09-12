@@ -26,6 +26,12 @@ import static org.mockito.Mockito.*;
  * manages timer samples, and delegates to {@link MetricsService} for both
  * successful executions and exceptions.
  * </p>
+ *
+ * @author Yubraj Sahoo
+ * @version 0.0.1
+ * @since 0.0.1
+ * @see TimerAspect
+ * @see io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder
  */
 @ExtendWith(MockitoExtension.class)
 class TimerAspectTest {
@@ -50,6 +56,10 @@ class TimerAspectTest {
 
     private TimerAspect timerAspect;
 
+    /**
+     * Initialises the {@link TimerAspect} and configures lenient stubs
+     * for the mock {@link ProceedingJoinPoint} and {@link MethodSignature}.
+     */
     @BeforeEach
     void setUp() {
         timerAspect = new TimerAspect(metricsService, beanResolver);
@@ -58,6 +68,12 @@ class TimerAspectTest {
         lenient().when(joinPoint.getArgs()).thenReturn(new Object[]{});
     }
 
+    /**
+     * Verifies that {@link TimerAspect#aroundTimer(ProceedingJoinPoint, Timer)} starts a timing sample,
+     * proceeds with execution, and delegates metric recording to the {@link MetricsService}.
+     *
+     * @throws Throwable if proceeding the join point fails
+     */
     @Test
     void aroundTimer_shouldStartSampleAndDelegateToMetricsService() throws Throwable {
         Object expectedResult = "returnValue";
@@ -71,6 +87,12 @@ class TimerAspectTest {
         verify(metricsService).record(eq(mockSample), eq(timer), any(StandardEvaluationContext.class));
     }
 
+    /**
+     * Verifies that the successful return value is correctly bound to {@code #result}
+     * in the SpEL evaluation context.
+     *
+     * @throws Throwable if proceeding the join point fails
+     */
     @Test
     void aroundTimer_shouldPassResultInContext() throws Throwable {
         Object expectedResult = "theResult";
@@ -88,6 +110,12 @@ class TimerAspectTest {
         assertThat(capturedContext.lookupVariable("error")).isNull();
     }
 
+    /**
+     * Verifies that if an exception is thrown during method execution, it is correctly bound
+     * to {@code #error} in the SpEL evaluation context, and the exception is rethrown.
+     *
+     * @throws Throwable if proceeding the join point fails
+     */
     @Test
     void aroundTimer_whenExceptionThrown_shouldPassExceptionInContextAndRethrow() throws Throwable {
         RuntimeException expectedException = new RuntimeException("test error");
@@ -109,6 +137,12 @@ class TimerAspectTest {
         assertThat(capturedContext.lookupVariable("result")).isNull();
     }
 
+    /**
+     * Verifies that method arguments from the join point are correctly populated
+     * into the SpEL evaluation context.
+     *
+     * @throws Throwable if proceeding the join point fails
+     */
     @Test
     void aroundTimer_withMethodArguments_shouldSetArgsInContext() throws Throwable {
         when(metricsService.start()).thenReturn(mockSample);
@@ -126,6 +160,12 @@ class TimerAspectTest {
         assertThat(contextCaptor.getValue().lookupVariable("orderId")).isEqualTo("ORD-42");
     }
 
+    /**
+     * Verifies that if starting the timer sample fails, the execution proceeds normally
+     * and no recording is attempted.
+     *
+     * @throws Throwable if proceeding the join point fails
+     */
     @Test
     void aroundTimer_whenMetricsServiceStartFails_shouldNotBlockExecution() throws Throwable {
         Object expectedResult = "success";

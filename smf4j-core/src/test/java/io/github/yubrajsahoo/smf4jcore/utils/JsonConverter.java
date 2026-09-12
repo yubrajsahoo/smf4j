@@ -38,6 +38,10 @@ import java.util.Map;
 /**
  * Utility class to parse JSON files into Java objects for testing.
  * Supports deserializing Micrometer {@link Tags} and SMF4J {@link Counter} annotations.
+ *
+ * @author Yubraj Sahoo
+ * @version 0.0.1
+ * @since 0.0.1
  */
 public class JsonConverter {
 

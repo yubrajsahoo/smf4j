@@ -18,11 +18,11 @@
 
 package io.github.yubrajsahoo.smf4jcore.meter.service.impl;
 
+import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4jcore.autoconfigure.Smf4jAutoConfiguration;
 import io.github.yubrajsahoo.smf4jcore.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4jcore.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
-import helper.JsonConverter;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -35,9 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("TimerMeterService Unit Test")
 @SpringBootTest(classes = Smf4jAutoConfiguration.class)

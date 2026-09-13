@@ -26,6 +26,8 @@ import io.github.yubrajsahoo.smf4jcore.meter.service.impl.TimerMeterService;
 import io.github.yubrajsahoo.smf4jcore.meter.service.impl.CounterMeterService;
 import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
 import io.github.yubrajsahoo.smf4jcore.service.impl.MetricsServiceImpl;
+import io.github.yubrajsahoo.smf4jcore.logger.MetricsLogger;
+import io.github.yubrajsahoo.smf4jcore.logger.impl.DefaultMetricsLogger;
 import io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder;
 import io.github.yubrajsahoo.smf4jcore.spel.SpelEvaluator;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -55,6 +57,7 @@ import java.util.List;
  *   <li>{@link CounterMeterService}</li>
  *   <li>{@link TimerMeterService}</li>
  *   <li>{@link MeterFactory}</li>
+ *   <li>{@link MetricsLogger}</li>
  *   <li>{@link MetricsService} (backed by {@link MetricsServiceImpl})</li>
  *   <li>{@link SpelContextBuilder}</li>
  *   <li>{@link CounterAspect}</li>
@@ -67,12 +70,6 @@ import java.util.List;
 @AutoConfiguration
 @EnableAspectJAutoProxy
 public class Smf4jAutoConfiguration {
-
-    /**
-     * Default constructor for {@link Smf4jAutoConfiguration}.
-     */
-    public Smf4jAutoConfiguration() {
-    }
 
     /**
      * Registers a fallback {@link SimpleMeterRegistry} if no {@link MeterRegistry} bean is currently present in the application context.
@@ -145,6 +142,17 @@ public class Smf4jAutoConfiguration {
     }
 
     /**
+     * Creates a {@link MetricsLogger} bean if none is defined.
+     *
+     * @return a new {@link DefaultMetricsLogger} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(MetricsLogger.class)
+    public MetricsLogger metricsLogger() {
+        return new DefaultMetricsLogger();
+    }
+
+    /**
      * Creates a {@link MetricsService} bean for evaluating metric tags and delegating recordings.
      *
      * @param spelEvaluator the SpEL evaluator for resolving dynamic metric tag expressions
@@ -153,8 +161,8 @@ public class Smf4jAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(MetricsService.class)
-    public MetricsService metricsService(SpelEvaluator spelEvaluator, MeterFactory meterFactory) {
-        return new MetricsServiceImpl(spelEvaluator, meterFactory);
+    public MetricsService metricsService(SpelEvaluator spelEvaluator, MeterFactory meterFactory, MetricsLogger metricsLogger) {
+        return new MetricsServiceImpl(spelEvaluator, meterFactory, metricsLogger);
     }
 
     /**

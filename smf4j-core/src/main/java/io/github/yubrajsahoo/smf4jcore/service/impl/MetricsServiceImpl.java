@@ -26,7 +26,7 @@ import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
 import io.github.yubrajsahoo.smf4jcore.factory.MeterFactory;
 import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
 import io.github.yubrajsahoo.smf4jcore.spel.SpelEvaluator;
-import io.github.yubrajsahoo.smf4jcore.utils.MetricsLogger;
+import io.github.yubrajsahoo.smf4jcore.logger.MetricsLogger;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
@@ -58,17 +58,20 @@ public class MetricsServiceImpl implements MetricsService {
 
     private final SpelEvaluator spelEvaluator;
     private final MeterFactory meterFactory;
+    private final MetricsLogger metricsLogger;
 
     /**
      * Constructs a new {@link MetricsServiceImpl} with the required dependencies.
      *
      * @param spelEvaluator the SpEL evaluator for resolving dynamic metric tags; must not be {@code null}
      * @param meterFactory  the meter factory for dispatching to specific meter services; must not be {@code null}
-     * @throws NullPointerException if {@code spelEvaluator} or {@code meterFactory} is {@code null}
+     * @param metricsLogger the metrics logger for logging metric details; must not be {@code null}
+     * @throws NullPointerException if any dependency is {@code null}
      */
-    public MetricsServiceImpl(SpelEvaluator spelEvaluator, MeterFactory meterFactory) {
+    public MetricsServiceImpl(SpelEvaluator spelEvaluator, MeterFactory meterFactory, MetricsLogger metricsLogger) {
         this.spelEvaluator = Objects.requireNonNull(spelEvaluator, "spelEvaluator must not be null");
         this.meterFactory = Objects.requireNonNull(meterFactory, "meterFactory must not be null");
+        this.metricsLogger = Objects.requireNonNull(metricsLogger, "metricsLogger must not be null");
     }
 
     /**
@@ -114,7 +117,7 @@ public class MetricsServiceImpl implements MetricsService {
                     .increment(counter.increment())
                     .build();
 
-            MetricsLogger.log(metrics);
+            metricsLogger.log(metrics);
 
             if (!metrics.isEnabled()) {
                 return;
@@ -124,8 +127,8 @@ public class MetricsServiceImpl implements MetricsService {
                             meterService -> meterService.recordMetrics(metrics),
                             () -> log.warn("No MeterService found for metrics type: {}", MetricsType.COUNTER)
                     );
-        } catch (Throwable throwable) {
-            log.error("Error while recording counter metric '{}': {}", counter.name(), throwable.getMessage(), throwable);
+        } catch (Exception exception) {
+            log.error("Error while recording counter metric '{}': {}", counter.name(), exception.getMessage(), exception);
         }
     }
 
@@ -154,6 +157,8 @@ public class MetricsServiceImpl implements MetricsService {
                     .enabled(timer.enable())
                     .sample(sample)
                     .build();
+
+            metricsLogger.log(metrics);
 
             if (metrics.isEnabled()) {
                 meterFactory.getMeterService(MetricsType.TIMER)

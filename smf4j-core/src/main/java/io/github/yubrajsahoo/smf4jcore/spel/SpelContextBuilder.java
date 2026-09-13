@@ -20,6 +20,7 @@ package io.github.yubrajsahoo.smf4jcore.spel;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant;
 import org.springframework.expression.BeanResolver;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
@@ -75,9 +76,9 @@ public final class SpelContextBuilder {
                 ? getRootCause(error)
                 : null;
 
-        context.setVariable("result", result);
-        context.setVariable("error", error);
-        context.setVariable("rootError", rootCause);
+        context.setVariable(MetricsConstant.RESULT, result);
+        context.setVariable(MetricsConstant.ERROR, error);
+        context.setVariable(MetricsConstant.ROOT_ERROR, rootCause);
         return context;
     }
 

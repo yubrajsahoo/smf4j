@@ -16,7 +16,7 @@
  *
  */
 
-package io.github.yubrajsahoo.smf4jcore.helper;
+package helper;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;

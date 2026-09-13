@@ -22,7 +22,7 @@ import io.github.yubrajsahoo.smf4jcore.autoconfigure.Smf4jAutoConfiguration;
 import io.github.yubrajsahoo.smf4jcore.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4jcore.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
-import io.github.yubrajsahoo.smf4jcore.helper.JsonConverter;
+import helper.JsonConverter;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;

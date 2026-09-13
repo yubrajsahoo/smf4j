@@ -20,7 +20,7 @@ package io.github.yubrajsahoo.smf4jcore.spel;
 
 import io.github.yubrajsahoo.smf4jcore.autoconfigure.Smf4jAutoConfiguration;
 import io.github.yubrajsahoo.smf4jcore.domain.CounterMetrics;
-import io.github.yubrajsahoo.smf4jcore.helper.JsonConverter;
+import helper.JsonConverter;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.BeforeEach;

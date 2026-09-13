@@ -142,7 +142,7 @@ public class MetricsServiceImpl implements MetricsService {
      */
     @Override
     public void recordMetrics(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context) {
-        if (timer == null) {
+        if (sample == null || timer == null) {
             log.warn("Cannot record metrics for null timer annotation");
             return;
         }

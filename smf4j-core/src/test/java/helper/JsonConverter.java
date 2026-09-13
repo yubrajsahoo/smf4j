@@ -72,7 +72,145 @@ public class JsonConverter {
             }
         });
 
+        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.annotation.Counter.class, CounterImpl.class);
+        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.annotation.Timer.class, TimerImpl.class);
+        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.annotation.Tags.class, TagsImpl.class);
+
         MAPPER.registerModule(module);
+    }
+
+    public static class CounterImpl implements io.github.yubrajsahoo.smf4jcore.annotation.Counter {
+        private String name;
+        private String description = io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE;
+        private io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags = new io.github.yubrajsahoo.smf4jcore.annotation.Tags[0];
+        private long increment = 1;
+        private boolean enable = true;
+
+        @Override
+        public Class<? extends java.lang.annotation.Annotation> annotationType() {
+            return io.github.yubrajsahoo.smf4jcore.annotation.Counter.class;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public String description() {
+            return description;
+        }
+
+        @Override
+        public io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags() {
+            return tags;
+        }
+
+        @Override
+        public long increment() {
+            return increment;
+        }
+
+        @Override
+        public boolean enable() {
+            return enable;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public void setTags(io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags) {
+            this.tags = tags;
+        }
+
+        public void setIncrement(long increment) {
+            this.increment = increment;
+        }
+
+        public void setEnable(boolean enable) {
+            this.enable = enable;
+        }
+    }
+
+    public static class TimerImpl implements io.github.yubrajsahoo.smf4jcore.annotation.Timer {
+        private String name;
+        private String description = io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE;
+        private io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags = new io.github.yubrajsahoo.smf4jcore.annotation.Tags[0];
+        private boolean enable = true;
+
+        @Override
+        public Class<? extends java.lang.annotation.Annotation> annotationType() {
+            return io.github.yubrajsahoo.smf4jcore.annotation.Timer.class;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public String description() {
+            return description;
+        }
+
+        @Override
+        public io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags() {
+            return tags;
+        }
+
+        @Override
+        public boolean enable() {
+            return enable;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public void setTags(io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags) {
+            this.tags = tags;
+        }
+
+        public void setEnable(boolean enable) {
+            this.enable = enable;
+        }
+    }
+
+    public static class TagsImpl implements io.github.yubrajsahoo.smf4jcore.annotation.Tags {
+        private String key = io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE;
+        private String value = io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE;
+
+        @Override
+        public Class<? extends java.lang.annotation.Annotation> annotationType() {
+            return io.github.yubrajsahoo.smf4jcore.annotation.Tags.class;
+        }
+
+        @Override
+        public String key() {
+            return key;
+        }
+
+        @Override
+        public String value() {
+            return value;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
     }
 
     public static <T> T read(String filePath, Class<T> clazz) {

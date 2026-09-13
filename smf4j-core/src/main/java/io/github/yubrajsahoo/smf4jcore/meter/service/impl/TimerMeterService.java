@@ -85,15 +85,13 @@ public class TimerMeterService implements MeterService {
      */
     @Override
     public void recordMetrics(Metrics metrics) {
-        if (metrics instanceof TimerMetrics timerMetrics) {
+        if (metrics instanceof TimerMetrics timerMetrics && timerMetrics.getSample() != null) {
             Timer timer = Timer.builder(timerMetrics.getName())
                     .description(timerMetrics.getDescription())
                     .tags(timerMetrics.getTags())
                     .register(meterRegistry);
-            
-            if (timerMetrics.getSample() != null) {
-                timerMetrics.getSample().stop(timer);
-            }
+
+            timerMetrics.getSample().stop(timer);
         } else {
             throw new IllegalArgumentException("Invalid metrics type for TimerMeterService");
         }

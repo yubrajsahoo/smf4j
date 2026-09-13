@@ -103,4 +103,18 @@ class TimerMeterServiceTest {
 
         assertEquals("Invalid metrics type for TimerMeterService", exception.getMessage());
     }
+
+    @Test
+    @DisplayName("recordMetrics should throw IllegalArgumentException for sample null")
+    void recordMetrics_sampleNull() {
+        TimerMetrics timerMetrics = JsonConverter.read(
+                "src/test/resources/json/timer-metrics.json", TimerMetrics.class
+        );
+
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                timerMeterService.recordMetrics(timerMetrics)
+        );
+
+        assertEquals("Invalid metrics type for TimerMeterService", exception.getMessage());
+    }
 }

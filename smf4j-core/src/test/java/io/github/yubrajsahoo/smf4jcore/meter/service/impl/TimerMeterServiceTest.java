@@ -23,9 +23,9 @@ import io.github.yubrajsahoo.smf4jcore.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4jcore.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
 import io.github.yubrajsahoo.smf4jcore.helper.JsonConverter;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,18 +33,20 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DisplayName("CounterMeterService Unit Test")
+@DisplayName("TimerMeterService Unit Test")
 @SpringBootTest(classes = Smf4jAutoConfiguration.class)
-class CounterMeterServiceTest {
+class TimerMeterServiceTest {
     @Autowired
-    private CounterMeterService counterMeterService;
+    private TimerMeterService timerMeterService;
 
     @Autowired
     private MeterRegistry meterRegistry;
-
 
     @BeforeEach
     void setUp() {
@@ -52,27 +54,38 @@ class CounterMeterServiceTest {
     }
 
     @Test
-    @DisplayName("getType should return MetricsType.COUNTER")
+    @DisplayName("getType should return MetricsType.TIMER")
     void getType() {
-        assertEquals(MetricsType.COUNTER, counterMeterService.getType());
+        assertEquals(MetricsType.TIMER, timerMeterService.getType());
     }
 
     @Test
-    @DisplayName("recordMetrics should register and increment counter metrics correctly")
+    @DisplayName("start should return a valid Timer.Sample")
+    void start() {
+        Timer.Sample sample = timerMeterService.start();
+        assertNotNull(sample);
+    }
+
+    @Test
+    @DisplayName("recordMetrics should register and record timer metrics correctly")
     void recordMetrics() {
-        CounterMetrics metrics = JsonConverter.read(
-                "src/test/resources/json/counter-metrics.json", CounterMetrics.class
+        TimerMetrics metrics = JsonConverter.read(
+                "src/test/resources/json/timer-metrics.json", TimerMetrics.class
         );
 
-        counterMeterService.recordMetrics(metrics);
+        // create a sample and measure time
+        Timer.Sample sample = timerMeterService.start();
+        metrics.setSample(sample);
 
-        Counter counter = meterRegistry.find("http.requests.total")
-                .counter();
+        timerMeterService.recordMetrics(metrics);
 
-        assertNotNull(counter);
-        assertEquals(3.0, counter.count());
+        Timer timer = meterRegistry.find("http.requests.total").timer();
 
-        Meter.Id id = counter.getId();
+        assertNotNull(timer);
+        assertEquals(1L, timer.count());
+        assertTrue(timer.totalTime(TimeUnit.MILLISECONDS) >= 0);
+
+        Meter.Id id = timer.getId();
         assertEquals("http.requests.total", id.getName());
         assertEquals("Total incoming HTTP requests", id.getDescription());
         assertEquals("GET", id.getTag("method"));
@@ -82,14 +95,14 @@ class CounterMeterServiceTest {
     @Test
     @DisplayName("recordMetrics should throw IllegalArgumentException for invalid metrics type")
     void recordMetrics_invalidType() {
-        TimerMetrics timerMetrics = JsonConverter.read(
-                "src/test/resources/json/timer-metrics.json", TimerMetrics.class
+        CounterMetrics counterMetrics = JsonConverter.read(
+                "src/test/resources/json/counter-metrics.json", CounterMetrics.class
         );
 
         IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                counterMeterService.recordMetrics(timerMetrics)
+                timerMeterService.recordMetrics(counterMetrics)
         );
 
-        assertEquals("Invalid metrics type for CounterMeterService", exception.getMessage());
+        assertEquals("Invalid metrics type for TimerMeterService", exception.getMessage());
     }
 }

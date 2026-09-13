@@ -85,8 +85,8 @@ public class CounterAspect {
                     .buildContext(joinPoint, result, null, beanResolver);
 
             metricsService.recordMetrics(counter, standardEvaluationContext);
-        } catch (Throwable throwable) {
-            log.error("Error while capturing Counter Metrics from Return: {}", throwable.getMessage(), throwable);
+        } catch (Exception exception) {
+            log.error("Error while capturing Counter Metrics from Return: {}", exception.getMessage(), exception);
         }
     }
 
@@ -99,20 +99,20 @@ public class CounterAspect {
      *
      * @param joinPoint the AOP join point representing the method invocation
      * @param counter   the {@link Counter} annotation on the intercepted method
-     * @param exception the exception thrown during method execution
+     * @param throwable the exception thrown during method execution
      */
     @AfterThrowing(
             pointcut = "@annotation(counter)",
             throwing = "exception"
     )
-    public void captureException(JoinPoint joinPoint, Counter counter, Throwable exception) {
+    public void captureException(JoinPoint joinPoint, Counter counter, Throwable throwable) {
         try {
             StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
-                    .buildContext(joinPoint, null, exception, beanResolver);
+                    .buildContext(joinPoint, null, throwable, beanResolver);
 
             metricsService.recordMetrics(counter, standardEvaluationContext);
-        } catch (Throwable throwable) {
-            log.error("Error while capturing Counter Metrics from Exception: {}", throwable.getMessage(), throwable);
+        } catch (Exception exception) {
+            log.error("Error while capturing Counter Metrics from Exception: {}", exception.getMessage(), exception);
         }
     }
 }

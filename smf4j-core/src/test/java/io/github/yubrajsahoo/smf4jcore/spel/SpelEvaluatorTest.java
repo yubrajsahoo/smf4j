@@ -127,6 +127,35 @@ class SpelEvaluatorTest {
         assertEquals("100", parsedExpression);
     }
 
+    @Test
+    @DisplayName("evaluate should return none when expression is null, empty or blank")
+    void testEvaluate_EmptyOrNull() {
+        assertEquals("none", spelEvaluator.evaluate(null, buildContext(null, null)));
+        assertEquals("none", spelEvaluator.evaluate("", buildContext(null, null)));
+        assertEquals("none", spelEvaluator.evaluate("   ", buildContext(null, null)));
+    }
+
+    @Test
+    @DisplayName("evaluate should return none when SpEL evaluates to null")
+    void testEvaluate_NullResult() {
+        String expression = "#nullVar"; // undefined variable evaluates to null
+        assertEquals("none", spelEvaluator.evaluate(expression, buildContext(null, null)));
+    }
+
+    @Test
+    @DisplayName("evaluate should return none when SpEL evaluation throws exception")
+    void testEvaluate_Exception() {
+        String expression = "#result.nonExistentMethod()"; // throws SpelEvaluationException
+        assertEquals("none", spelEvaluator.evaluate(expression, buildContext("Success", null)));
+    }
+
+    @Test
+    @DisplayName("evaluate should return none when SpEL parsing throws exception")
+    void testEvaluate_ParseException() {
+        String expression = "#invalid("; // throws SpelParseException
+        assertEquals("none", spelEvaluator.evaluate(expression, buildContext(null, null)));
+    }
+
     private StandardEvaluationContext buildContext(Object result, Throwable error) {
         return SpelContextBuilder.buildContext(joinPoint, result, error, beanResolver);
     }

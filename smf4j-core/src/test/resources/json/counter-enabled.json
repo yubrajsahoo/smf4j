@@ -6,11 +6,11 @@
   "tags": [
     {
       "key": "method",
-      "value": "GET"
+      "value": "#result"
     },
     {
       "key": "outcome",
-      "value": "SUCCESS"
+      "value": "#error == null ? 'SUCCESS' : 'FAILURE'"
     }
   ]
 }

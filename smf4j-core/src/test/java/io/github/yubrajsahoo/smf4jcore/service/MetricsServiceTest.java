@@ -130,6 +130,66 @@ class MetricsServiceTest {
     }
 
     @Test
+    @DisplayName("Should Store Counter Metrics")
+    void testRecordMetrics_Counter_Enabled() {
+        Counter counter = JsonConverter.read(
+                "src/test/resources/json/counter-enabled.json", Counter.class
+        );
+
+        metricsService.recordMetrics(counter, buildContext("GET", null));
+
+        //should log enabled log
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        String expectedMessage = "Metrics Logs For With->name=http.requests.total->" +
+                "method=GET->outcome=SUCCESS->description=Total incoming HTTP requests->increment=3";
+
+        assertEquals(expectedMessage, formattedMessage);
+
+        //should store metrics
+        io.micrometer.core.instrument.Counter savedCounter = meterRegistry.find("http.requests.total")
+                .counter();
+
+        assertNotNull(savedCounter);
+        assertEquals(3.0, savedCounter.count());
+
+        io.micrometer.core.instrument.Meter.Id id = savedCounter.getId();
+        assertEquals("http.requests.total", id.getName());
+        assertEquals("Total incoming HTTP requests", id.getDescription());
+        assertEquals("GET", id.getTag("method"));
+        assertEquals("SUCCESS", id.getTag("outcome"));
+    }
+
+    @Test
+    @DisplayName("Should Store Counter Metrics With Error")
+    void testRecordMetrics_Counter_Enabled_WithError() {
+        Counter counter = JsonConverter.read(
+                "src/test/resources/json/counter-enabled.json", Counter.class
+        );
+
+        metricsService.recordMetrics(counter, buildContext(null, new RuntimeException("Test Exception")));
+
+        //should log enabled log
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        String expectedMessage = "Metrics Logs For With->name=http.requests.total->" +
+                "method=none->outcome=FAILURE->description=Total incoming HTTP requests->increment=3";
+
+        assertEquals(expectedMessage, formattedMessage);
+
+        //should store metrics
+        io.micrometer.core.instrument.Counter savedCounter = meterRegistry.find("http.requests.total")
+                .counter();
+
+        assertNotNull(savedCounter);
+        assertEquals(3.0, savedCounter.count());
+
+        io.micrometer.core.instrument.Meter.Id id = savedCounter.getId();
+        assertEquals("http.requests.total", id.getName());
+        assertEquals("Total incoming HTTP requests", id.getDescription());
+        assertEquals("none", id.getTag("method"));
+        assertEquals("FAILURE", id.getTag("outcome"));
+    }
+
+    @Test
     @DisplayName("Should Not Store Any Timer Metrics Due to Sample Null")
     void testRecordMetrics_Sample_Null() {
         io.github.yubrajsahoo.smf4jcore.annotation.Timer timer = JsonConverter.read(
@@ -190,6 +250,95 @@ class MetricsServiceTest {
                 .counter();
 
         assertNull(savedCounter);
+    }
+
+    @Test
+    @DisplayName("Should Handle Exception While Recording Counter Metrics")
+    void testRecordMetrics_Counter_Exception() {
+        Counter counter = mock(Counter.class);
+        when(counter.name()).thenReturn("test.counter");
+        when(counter.tags()).thenThrow(new RuntimeException("Simulated exception"));
+
+        assertDoesNotThrow(() -> metricsService.recordMetrics(counter, buildContext(null, null)));
+    }
+
+    @Test
+    @DisplayName("Should Store Timer Metrics")
+    void testRecordMetrics_Timer_Enabled() {
+        Timer.Sample sample = metricsService.start();
+
+        io.github.yubrajsahoo.smf4jcore.annotation.Timer timer = JsonConverter.read(
+                "src/test/resources/json/timer-enabled.json",
+                io.github.yubrajsahoo.smf4jcore.annotation.Timer.class
+        );
+
+        metricsService.recordMetrics(sample, timer, buildContext("GET", null));
+
+        //should log enabled log
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        String expectedMessage = "Metrics Logs For With->name=http.requests.total->" +
+                "method=GET->outcome=SUCCESS->description=Total incoming HTTP requests";
+
+        assertEquals(expectedMessage, formattedMessage);
+
+        //should store metrics
+        io.micrometer.core.instrument.Timer savedTimer = meterRegistry.find("http.requests.total")
+                .timer();
+
+        assertNotNull(savedTimer);
+        assertEquals(1L, savedTimer.count());
+        assertTrue(savedTimer.totalTime(java.util.concurrent.TimeUnit.MILLISECONDS) >= 0);
+
+        io.micrometer.core.instrument.Meter.Id id = savedTimer.getId();
+        assertEquals("http.requests.total", id.getName());
+        assertEquals("Total incoming HTTP requests", id.getDescription());
+        assertEquals("GET", id.getTag("method"));
+        assertEquals("SUCCESS", id.getTag("outcome"));
+    }
+
+    @Test
+    @DisplayName("Should Store Timer Metrics With Error")
+    void testRecordMetrics_Timer_Enabled_WithError() {
+        Timer.Sample sample = metricsService.start();
+
+        io.github.yubrajsahoo.smf4jcore.annotation.Timer timer = JsonConverter.read(
+                "src/test/resources/json/timer-enabled.json",
+                io.github.yubrajsahoo.smf4jcore.annotation.Timer.class
+        );
+
+        metricsService.recordMetrics(sample, timer, buildContext(null, new RuntimeException("Test Exception")));
+
+        //should log enabled log
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        String expectedMessage = "Metrics Logs For With->name=http.requests.total->" +
+                "method=none->outcome=FAILURE->description=Total incoming HTTP requests";
+
+        assertEquals(expectedMessage, formattedMessage);
+
+        //should store metrics
+        io.micrometer.core.instrument.Timer savedTimer = meterRegistry.find("http.requests.total")
+                .timer();
+
+        assertNotNull(savedTimer);
+        assertEquals(1L, savedTimer.count());
+        assertTrue(savedTimer.totalTime(java.util.concurrent.TimeUnit.MILLISECONDS) >= 0);
+
+        io.micrometer.core.instrument.Meter.Id id = savedTimer.getId();
+        assertEquals("http.requests.total", id.getName());
+        assertEquals("Total incoming HTTP requests", id.getDescription());
+        assertEquals("none", id.getTag("method"));
+        assertEquals("FAILURE", id.getTag("outcome"));
+    }
+
+    @Test
+    @DisplayName("Should Handle Exception While Recording Timer Metrics")
+    void testRecordMetrics_Timer_Exception() {
+        Timer.Sample sample = metricsService.start();
+        io.github.yubrajsahoo.smf4jcore.annotation.Timer timer = mock(io.github.yubrajsahoo.smf4jcore.annotation.Timer.class);
+        when(timer.name()).thenReturn("test.timer");
+        when(timer.tags()).thenThrow(new RuntimeException("Simulated exception"));
+
+        assertDoesNotThrow(() -> metricsService.recordMetrics(sample, timer, buildContext(null, null)));
     }
 
     private StandardEvaluationContext buildContext(Object result, Throwable error) {

@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = Smf4jAutoConfiguration.class)
 class CounterAspectTest {
@@ -47,17 +48,21 @@ class CounterAspectTest {
         Mockito.reset(joinPoint, methodSignature);
         lenient().when(joinPoint.getSignature()).thenReturn(methodSignature);
 
-        //verify log for DefaultMetricsLogger
+        //verify log for DefaultMetricsLogger and CounterAspect
         Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger aspectLogger = (Logger) LoggerFactory.getLogger(CounterAspect.class);
         listAppender = new ListAppender<>();
         listAppender.start();
         logger.addAppender(listAppender);
+        aspectLogger.addAppender(listAppender);
     }
 
     @AfterEach
     void tearDown() {
         Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger aspectLogger = (Logger) LoggerFactory.getLogger(CounterAspect.class);
         logger.detachAppender(listAppender);
+        aspectLogger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }
 
@@ -107,5 +112,38 @@ class CounterAspectTest {
         assertEquals("Total incoming HTTP requests", id.getDescription());
         assertEquals("none", id.getTag("method"));
         assertEquals("FAILURE", id.getTag("outcome"));
+    }
+
+    @Test
+    @DisplayName("Should Log Error on Exception in captureReturn")
+    void testCaptureReturnException() {
+        Counter counter = JsonConverter.read(
+                "src/test/resources/json/counter-enabled.json", Counter.class
+        );
+
+        when(joinPoint.getSignature()).thenThrow(new RuntimeException("Test Exception"));
+
+        counterAspect.captureReturn(joinPoint, counter, "GET");
+
+        assertEquals(1, listAppender.list.size());
+        assertEquals("Error while capturing Counter Metrics from Return: Test Exception", listAppender.list.get(0).getFormattedMessage());
+        assertEquals("Test Exception", listAppender.list.get(0).getThrowableProxy().getMessage());
+    }
+
+    @Test
+    @DisplayName("Should Log Error on Exception in captureException")
+    void testCaptureExceptionException() {
+        Counter counter = JsonConverter.read(
+                "src/test/resources/json/counter-enabled.json", Counter.class
+        );
+
+        when(joinPoint.getSignature()).thenThrow(new RuntimeException("Test Exception"));
+
+        Throwable exception = new RuntimeException("Original Exception");
+        counterAspect.captureException(joinPoint, counter, exception);
+
+        assertEquals(1, listAppender.list.size());
+        assertEquals("Error while capturing Counter Metrics from Exception: Test Exception", listAppender.list.get(0).getFormattedMessage());
+        assertEquals("Test Exception", listAppender.list.get(0).getThrowableProxy().getMessage());
     }
 }

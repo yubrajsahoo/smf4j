@@ -62,6 +62,7 @@ class SpelContextBuilderTest {
         Object[] args = {123L, true};
 
         when(methodSignature.getParameterNames()).thenReturn(paramNames);
+        when(methodSignature.getName()).thenReturn("testMethod");
         when(joinPoint.getArgs()).thenReturn(args);
 
         Object result = "Success";
@@ -78,6 +79,9 @@ class SpelContextBuilderTest {
         assertSame(error, context.lookupVariable(MetricsConstant.ERROR));
         assertSame(rootCause, context.lookupVariable(MetricsConstant.ROOT_ERROR));
         assertSame(beanResolver, context.getBeanResolver());
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertSame(methodSignature, context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertEquals("testMethod", context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
     @Test
@@ -89,6 +93,9 @@ class SpelContextBuilderTest {
         assertNull(context.lookupVariable(MetricsConstant.ERROR));
         assertNull(context.lookupVariable(MetricsConstant.ROOT_ERROR));
         assertNull(context.getBeanResolver());
+        assertNull(context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
     @Test
@@ -100,6 +107,9 @@ class SpelContextBuilderTest {
         StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null, null, null);
 
         assertNull(context.lookupVariable(MetricsConstant.RESULT)); // Just verify context creation didn't throw
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
     @Test
@@ -107,10 +117,29 @@ class SpelContextBuilderTest {
     void buildContext_withNullArgsAndParams() {
         when(methodSignature.getParameterNames()).thenReturn(null);
         when(joinPoint.getArgs()).thenReturn(null);
+        when(methodSignature.getName()).thenReturn("testMethod");
 
         StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null, null, null);
 
         assertNull(context.lookupVariable(MetricsConstant.RESULT));
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertSame(methodSignature, context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertEquals("testMethod", context.lookupVariable(MetricsConstant.METHOD_NAME));
+    }
+
+    @Test
+    @DisplayName("buildContext should handle null arguments gracefully")
+    void buildContext_withNullArgs() {
+        when(methodSignature.getParameterNames()).thenReturn(new String[]{"userId"});
+        when(joinPoint.getArgs()).thenReturn(null);
+        when(methodSignature.getName()).thenReturn("testMethod");
+
+        StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null, null, null);
+
+        assertNull(context.lookupVariable("userId"));
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertSame(methodSignature, context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertEquals("testMethod", context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
     @Test
@@ -118,11 +147,15 @@ class SpelContextBuilderTest {
     void buildContext_withMismatchedArgsAndParams() {
         when(methodSignature.getParameterNames()).thenReturn(new String[]{"userId", "isActive"});
         when(joinPoint.getArgs()).thenReturn(new Object[]{123L}); // only 1 arg provided
+        when(methodSignature.getName()).thenReturn("testMethod");
 
         StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null, null, null);
 
         assertEquals(123L, context.lookupVariable("userId"));
         assertNull(context.lookupVariable("isActive"));
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertSame(methodSignature, context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertEquals("testMethod", context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
     @Test
@@ -134,5 +167,17 @@ class SpelContextBuilderTest {
 
         assertSame(error, context.lookupVariable(MetricsConstant.ERROR));
         assertSame(error, context.lookupVariable(MetricsConstant.ROOT_ERROR));
+        assertNull(context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_NAME));
+    }
+
+    @Test
+    @DisplayName("Test private constructor")
+    void testPrivateConstructor() throws Exception {
+        java.lang.reflect.Constructor<SpelContextBuilder> constructor = SpelContextBuilder.class.getDeclaredConstructor();
+        assertTrue(java.lang.reflect.Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }

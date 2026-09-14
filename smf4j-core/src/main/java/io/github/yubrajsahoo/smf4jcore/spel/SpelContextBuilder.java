@@ -71,7 +71,17 @@ public final class SpelContextBuilder {
             context.setBeanResolver(resolver);
         }
 
-        updateMethodArguments(joinPoint, context);
+        if (Objects.nonNull(joinPoint)) {
+            context.setVariable(MetricsConstant.JOIN_POINT, joinPoint);
+
+            if (joinPoint.getSignature() instanceof MethodSignature signature) {
+                context.setVariable(MetricsConstant.METHOD_SIGNATURE, signature);
+                context.setVariable(MetricsConstant.METHOD_NAME, signature.getName());
+
+                updateMethodArguments(joinPoint, context);
+            }
+        }
+
         Throwable rootCause = error != null
                 ? getRootCause(error)
                 : null;
@@ -89,14 +99,13 @@ public final class SpelContextBuilder {
      * @param context   the context
      */
     private static void updateMethodArguments(JoinPoint joinPoint, StandardEvaluationContext context) {
-        if (joinPoint != null && joinPoint.getSignature() instanceof MethodSignature signature) {
-            String[] parameterNames = signature.getParameterNames();
-            Object[] arguments = joinPoint.getArgs();
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        String[] parameterNames = signature.getParameterNames();
+        Object[] arguments = joinPoint.getArgs();
 
-            if (parameterNames != null && arguments != null) {
-                for (int i = 0; i < parameterNames.length && i < arguments.length; i++) {
-                    context.setVariable(parameterNames[i], arguments[i]);
-                }
+        if (parameterNames != null && arguments != null) {
+            for (int i = 0; i < parameterNames.length && i < arguments.length; i++) {
+                context.setVariable(parameterNames[i], arguments[i]);
             }
         }
     }

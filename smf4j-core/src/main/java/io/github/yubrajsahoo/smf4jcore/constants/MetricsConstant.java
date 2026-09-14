@@ -58,6 +58,12 @@ public final class MetricsConstant {
      */
     public static final List<String> ALLOWED_SPEL_DESIGNS = List.of("@", "#", "T");
 
+    public static final String JOIN_POINT = "joinPoint";
+
+    public static final String METHOD_SIGNATURE = "methodSignature";
+
+    public static final String METHOD_NAME = "methodName";
+
     /**
      * Variable name used in SpEL evaluation contexts to represent the return value of an intercepted method.
      */

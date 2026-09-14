@@ -50,7 +50,7 @@ public interface MetricsService {
      * @param counter the {@link Counter} annotation containing metric definition and metadata
      * @param context the SpEL evaluation context providing variables for dynamic tag resolution
      */
-    void record(Counter counter, StandardEvaluationContext context);
+    void recordMetrics(Counter counter, StandardEvaluationContext context);
 
     /**
      * Processes and records a timer metric based on the metadata in {@link Timer}
@@ -60,5 +60,5 @@ public interface MetricsService {
      * @param timer   the {@link Timer} annotation containing metric definition and metadata
      * @param context the SpEL evaluation context providing variables for dynamic tag resolution
      */
-    void record(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context);
+    void recordMetrics(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context);
 }

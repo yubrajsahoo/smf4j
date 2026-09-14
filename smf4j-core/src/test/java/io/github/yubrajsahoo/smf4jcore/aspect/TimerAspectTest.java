@@ -1,46 +1,39 @@
 package io.github.yubrajsahoo.smf4jcore.aspect;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4jcore.annotation.Timer;
-import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
+import io.github.yubrajsahoo.smf4jcore.autoconfigure.Smf4jAutoConfiguration;
+import io.github.yubrajsahoo.smf4jcore.logger.impl.DefaultMetricsLogger;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.expression.BeanResolver;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import java.util.concurrent.TimeUnit;
 
-/**
- * Unit tests for {@link TimerAspect}.
- * <p>
- * Validates that the aspect correctly constructs a SpEL evaluation context,
- * manages timer samples, and delegates to {@link MetricsService} for both
- * successful executions and exceptions.
- * </p>
- *
- * @author Yubraj Sahoo
- * @version 0.0.1
- * @since 0.0.1
- * @see TimerAspect
- * @see io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder
- */
-@ExtendWith(MockitoExtension.class)
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
+
+@SpringBootTest(classes = Smf4jAutoConfiguration.class)
 class TimerAspectTest {
 
-    @Mock
-    private MetricsService metricsService;
+    @Autowired
+    private TimerAspect timerAspect;
 
-    @Mock
-    private BeanResolver beanResolver;
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     @Mock
     private ProceedingJoinPoint joinPoint;
@@ -48,134 +41,80 @@ class TimerAspectTest {
     @Mock
     private MethodSignature methodSignature;
 
-    @Mock
-    private io.micrometer.core.instrument.Timer.Sample mockSample;
+    private ListAppender<ILoggingEvent> listAppender;
 
-    @Mock
-    private Timer timer;
-
-    private TimerAspect timerAspect;
-
-    /**
-     * Initialises the {@link TimerAspect} and configures lenient stubs
-     * for the mock {@link ProceedingJoinPoint} and {@link MethodSignature}.
-     */
     @BeforeEach
     void setUp() {
-        timerAspect = new TimerAspect(metricsService, beanResolver);
+        meterRegistry.clear();
+        Mockito.reset(joinPoint, methodSignature);
         lenient().when(joinPoint.getSignature()).thenReturn(methodSignature);
-        lenient().when(methodSignature.getParameterNames()).thenReturn(new String[]{});
-        lenient().when(joinPoint.getArgs()).thenReturn(new Object[]{});
+
+        //verify log for DefaultMetricsLogger
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
     }
 
-    /**
-     * Verifies that {@link TimerAspect#aroundTimer(ProceedingJoinPoint, Timer)} starts a timing sample,
-     * proceeds with execution, and delegates metric recording to the {@link MetricsService}.
-     *
-     * @throws Throwable if proceeding the join point fails
-     */
-    @Test
-    void aroundTimer_shouldStartSampleAndDelegateToMetricsService() throws Throwable {
-        Object expectedResult = "returnValue";
-        when(metricsService.start()).thenReturn(mockSample);
-        when(joinPoint.proceed()).thenReturn(expectedResult);
-
-        Object actualResult = timerAspect.aroundTimer(joinPoint, timer);
-
-        assertThat(actualResult).isEqualTo(expectedResult);
-        verify(metricsService).start();
-        verify(metricsService).record(eq(mockSample), eq(timer), any(StandardEvaluationContext.class));
+    @AfterEach
+    void tearDown() {
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        logger.detachAppender(listAppender);
+        listAppender.clearAllFilters();
     }
 
-    /**
-     * Verifies that the successful return value is correctly bound to {@code #result}
-     * in the SpEL evaluation context.
-     *
-     * @throws Throwable if proceeding the join point fails
-     */
     @Test
-    void aroundTimer_shouldPassResultInContext() throws Throwable {
-        Object expectedResult = "theResult";
-        when(metricsService.start()).thenReturn(mockSample);
-        when(joinPoint.proceed()).thenReturn(expectedResult);
+    @DisplayName("Should Execute Around Timer Successfully and Record Metrics")
+    void testAroundTimer_Success() throws Throwable {
+        Timer timer = JsonConverter.read(
+                "src/test/resources/json/timer-enabled.json", Timer.class
+        );
 
-        timerAspect.aroundTimer(joinPoint, timer);
+        when(joinPoint.proceed()).thenReturn("GET");
 
-        ArgumentCaptor<StandardEvaluationContext> contextCaptor =
-                ArgumentCaptor.forClass(StandardEvaluationContext.class);
-        verify(metricsService).record(eq(mockSample), eq(timer), contextCaptor.capture());
+        Object result = timerAspect.aroundTimer(joinPoint, timer);
+        assertEquals("GET", result);
 
-        StandardEvaluationContext capturedContext = contextCaptor.getValue();
-        assertThat(capturedContext.lookupVariable("result")).isEqualTo(expectedResult);
-        assertThat(capturedContext.lookupVariable("error")).isNull();
+        //should store metrics
+        io.micrometer.core.instrument.Timer savedTimer = meterRegistry.find("http.requests.total")
+                .timer();
+
+        assertNotNull(savedTimer);
+        assertEquals(1L, savedTimer.count());
+        assertTrue(savedTimer.totalTime(TimeUnit.MILLISECONDS) >= 0);
+
+        io.micrometer.core.instrument.Meter.Id id = savedTimer.getId();
+        assertEquals("http.requests.total", id.getName());
+        assertEquals("Total incoming HTTP requests", id.getDescription());
+        assertEquals("GET", id.getTag("method"));
+        assertEquals("SUCCESS", id.getTag("outcome"));
     }
 
-    /**
-     * Verifies that if an exception is thrown during method execution, it is correctly bound
-     * to {@code #error} in the SpEL evaluation context, and the exception is rethrown.
-     *
-     * @throws Throwable if proceeding the join point fails
-     */
     @Test
-    void aroundTimer_whenExceptionThrown_shouldPassExceptionInContextAndRethrow() throws Throwable {
-        RuntimeException expectedException = new RuntimeException("test error");
-        when(metricsService.start()).thenReturn(mockSample);
-        when(joinPoint.proceed()).thenThrow(expectedException);
+    @DisplayName("Should Execute Around Timer When Target Throws Exception and Record Metrics")
+    void testAroundTimer_Exception() throws Throwable {
+        Timer timer = JsonConverter.read(
+                "src/test/resources/json/timer-enabled.json", Timer.class
+        );
 
-        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
-            timerAspect.aroundTimer(joinPoint, timer);
-        });
+        Throwable exception = new RuntimeException("Test Exception");
+        when(joinPoint.proceed()).thenThrow(exception);
 
-        assertThat(thrown).isEqualTo(expectedException);
+        Throwable thrown = assertThrows(RuntimeException.class, () -> timerAspect.aroundTimer(joinPoint, timer));
+        assertEquals("Test Exception", thrown.getMessage());
 
-        ArgumentCaptor<StandardEvaluationContext> contextCaptor =
-                ArgumentCaptor.forClass(StandardEvaluationContext.class);
-        verify(metricsService).record(eq(mockSample), eq(timer), contextCaptor.capture());
+        //should store metrics
+        io.micrometer.core.instrument.Timer savedTimer = meterRegistry.find("http.requests.total")
+                .timer();
 
-        StandardEvaluationContext capturedContext = contextCaptor.getValue();
-        assertThat(capturedContext.lookupVariable("error")).isEqualTo(expectedException);
-        assertThat(capturedContext.lookupVariable("result")).isNull();
-    }
+        assertNotNull(savedTimer);
+        assertEquals(1L, savedTimer.count());
+        assertTrue(savedTimer.totalTime(TimeUnit.MILLISECONDS) >= 0);
 
-    /**
-     * Verifies that method arguments from the join point are correctly populated
-     * into the SpEL evaluation context.
-     *
-     * @throws Throwable if proceeding the join point fails
-     */
-    @Test
-    void aroundTimer_withMethodArguments_shouldSetArgsInContext() throws Throwable {
-        when(metricsService.start()).thenReturn(mockSample);
-        when(joinPoint.proceed()).thenReturn("done");
-        
-        when(methodSignature.getParameterNames()).thenReturn(new String[]{"orderId"});
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"ORD-42"});
-
-        timerAspect.aroundTimer(joinPoint, timer);
-
-        ArgumentCaptor<StandardEvaluationContext> contextCaptor =
-                ArgumentCaptor.forClass(StandardEvaluationContext.class);
-        verify(metricsService).record(eq(mockSample), eq(timer), contextCaptor.capture());
-
-        assertThat(contextCaptor.getValue().lookupVariable("orderId")).isEqualTo("ORD-42");
-    }
-
-    /**
-     * Verifies that if starting the timer sample fails, the execution proceeds normally
-     * and no recording is attempted.
-     *
-     * @throws Throwable if proceeding the join point fails
-     */
-    @Test
-    void aroundTimer_whenMetricsServiceStartFails_shouldNotBlockExecution() throws Throwable {
-        Object expectedResult = "success";
-        when(metricsService.start()).thenThrow(new RuntimeException("Metric system down"));
-        when(joinPoint.proceed()).thenReturn(expectedResult);
-
-        Object actualResult = timerAspect.aroundTimer(joinPoint, timer);
-
-        assertThat(actualResult).isEqualTo(expectedResult);
-        verify(joinPoint).proceed();
-        verify(metricsService, never()).record(any(), any(), any());
+        io.micrometer.core.instrument.Meter.Id id = savedTimer.getId();
+        assertEquals("http.requests.total", id.getName());
+        assertEquals("Total incoming HTTP requests", id.getDescription());
+        assertEquals("none", id.getTag("method"));
+        assertEquals("FAILURE", id.getTag("outcome"));
     }
 }

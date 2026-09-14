@@ -76,7 +76,7 @@ public class SpelEvaluator {
             return MetricsConstant.NONE;
         }
         if (MetricsConstant.ALLOWED_SPEL_DESIGNS.stream().noneMatch(expression::startsWith)) {
-            System.out.println("Expression does not start with # or @, returning as literal: " + expression);
+            log.debug("Expression does not start with # or @, returning as literal: {}", expression);
             return expression;
         }
 

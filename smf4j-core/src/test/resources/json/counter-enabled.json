@@ -1,0 +1,16 @@
+{
+  "name": "http.requests.total",
+  "description": "Total incoming HTTP requests",
+  "enable": true,
+  "increment": 3,
+  "tags": [
+    {
+      "key": "method",
+      "value": "#result"
+    },
+    {
+      "key": "outcome",
+      "value": "#error == null ? 'SUCCESS' : 'FAILURE'"
+    }
+  ]
+}

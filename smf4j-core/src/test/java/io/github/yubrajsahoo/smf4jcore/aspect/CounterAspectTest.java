@@ -1,63 +1,38 @@
-/*
- *
- *  * Copyright 2024 Yubraj Sahoo
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
-
 package io.github.yubrajsahoo.smf4jcore.aspect;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4jcore.annotation.Counter;
-import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
-import io.github.yubrajsahoo.smf4jcore.utils.JsonConverter;
+import io.github.yubrajsahoo.smf4jcore.autoconfigure.Smf4jAutoConfiguration;
+import io.github.yubrajsahoo.smf4jcore.logger.impl.DefaultMetricsLogger;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.expression.BeanResolver;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
-/**
- * Unit tests for {@link CounterAspect}.
- * <p>
- * Validates that the aspect correctly constructs a SpEL evaluation context and
- * delegates to {@link MetricsService} for both successful returns and exceptions.
- * </p>
- *
- * @author Yubraj Sahoo
- * @version 0.0.1
- * @since 0.0.1
- * @see CounterAspect
- * @see io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder
- */
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = Smf4jAutoConfiguration.class)
 class CounterAspectTest {
 
-    @Mock
-    private MetricsService metricsService;
+    @Autowired
+    private CounterAspect counterAspect;
 
-    @Mock
-    private BeanResolver beanResolver;
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     @Mock
     private JoinPoint joinPoint;
@@ -65,123 +40,110 @@ class CounterAspectTest {
     @Mock
     private MethodSignature methodSignature;
 
-    private CounterAspect counterAspect;
+    private ListAppender<ILoggingEvent> listAppender;
 
-    /**
-     * Initialises the {@link CounterAspect} and configures lenient stubs
-     * for the mock {@link JoinPoint} and {@link MethodSignature}.
-     */
     @BeforeEach
     void setUp() {
-        counterAspect = new CounterAspect(metricsService, beanResolver);
+        meterRegistry.clear();
+        Mockito.reset(joinPoint, methodSignature);
         lenient().when(joinPoint.getSignature()).thenReturn(methodSignature);
-        lenient().when(methodSignature.getParameterNames()).thenReturn(new String[]{});
-        lenient().when(joinPoint.getArgs()).thenReturn(new Object[]{});
+
+        //verify log for DefaultMetricsLogger and CounterAspect
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger aspectLogger = (Logger) LoggerFactory.getLogger(CounterAspect.class);
+        listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+        aspectLogger.addAppender(listAppender);
     }
 
-    /**
-     * Verifies that {@link CounterAspect#captureReturn(JoinPoint, Counter, Object)}
-     * delegates to {@link MetricsService#record(Counter, StandardEvaluationContext)}.
-     */
-    @Test
-    void captureReturn_shouldDelegateToMetricsService() {
-        Counter counter = JsonConverter.fromJsonFile("/data/counter-annot-basic.json", Counter.class);
-        Object result = "returnValue";
+    @AfterEach
+    void tearDown() {
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger aspectLogger = (Logger) LoggerFactory.getLogger(CounterAspect.class);
+        logger.detachAppender(listAppender);
+        aspectLogger.detachAppender(listAppender);
+        listAppender.clearAllFilters();
+    }
 
+    @Test
+    @DisplayName("Should Capture Return and Record Metrics")
+    void testCaptureReturn() {
+        Counter counter = JsonConverter.read(
+                "src/test/resources/json/counter-enabled.json", Counter.class
+        );
+
+        Object result = "GET";
         counterAspect.captureReturn(joinPoint, counter, result);
 
-        verify(metricsService).record(eq(counter), any(StandardEvaluationContext.class));
+        //should store metrics
+        io.micrometer.core.instrument.Counter savedCounter = meterRegistry.find("http.requests.total")
+                .counter();
+
+        assertNotNull(savedCounter);
+        assertEquals(3.0, savedCounter.count());
+
+        io.micrometer.core.instrument.Meter.Id id = savedCounter.getId();
+        assertEquals("http.requests.total", id.getName());
+        assertEquals("Total incoming HTTP requests", id.getDescription());
+        assertEquals("GET", id.getTag("method"));
+        assertEquals("SUCCESS", id.getTag("outcome"));
     }
 
-    /**
-     * Verifies that the return value is bound as {@code #result} in the SpEL context
-     * and {@code #error} is {@code null}.
-     */
     @Test
-    void captureReturn_shouldPassResultInContext() {
-        Counter counter = JsonConverter.fromJsonFile("/data/counter-annot-basic.json", Counter.class);
-        Object result = "theResult";
+    @DisplayName("Should Capture Exception and Record Metrics")
+    void testCaptureException() {
+        Counter counter = JsonConverter.read(
+                "src/test/resources/json/counter-enabled.json", Counter.class
+        );
 
-        counterAspect.captureReturn(joinPoint, counter, result);
-
-        ArgumentCaptor<StandardEvaluationContext> contextCaptor =
-                ArgumentCaptor.forClass(StandardEvaluationContext.class);
-        verify(metricsService).record(eq(counter), contextCaptor.capture());
-
-        StandardEvaluationContext capturedContext = contextCaptor.getValue();
-        assertThat(capturedContext.lookupVariable("result")).isEqualTo("theResult");
-        assertThat(capturedContext.lookupVariable("error")).isNull();
-    }
-
-    /**
-     * Verifies that {@link CounterAspect#captureException(JoinPoint, Counter, Throwable)}
-     * delegates to {@link MetricsService#record(Counter, StandardEvaluationContext)}.
-     */
-    @Test
-    void captureException_shouldDelegateToMetricsService() {
-        Counter counter = JsonConverter.fromJsonFile("/data/counter-annot-basic.json", Counter.class);
-        RuntimeException exception = new RuntimeException("test error");
-
+        Throwable exception = new RuntimeException("Test Exception");
         counterAspect.captureException(joinPoint, counter, exception);
 
-        verify(metricsService).record(eq(counter), any(StandardEvaluationContext.class));
+        //should store metrics
+        io.micrometer.core.instrument.Counter savedCounter = meterRegistry.find("http.requests.total")
+                .counter();
+
+        assertNotNull(savedCounter);
+        assertEquals(3.0, savedCounter.count());
+
+        io.micrometer.core.instrument.Meter.Id id = savedCounter.getId();
+        assertEquals("http.requests.total", id.getName());
+        assertEquals("Total incoming HTTP requests", id.getDescription());
+        assertEquals("none", id.getTag("method"));
+        assertEquals("FAILURE", id.getTag("outcome"));
     }
 
-    /**
-     * Verifies that the exception is bound as {@code #error} in the SpEL context
-     * and {@code #result} is {@code null}.
-     */
     @Test
-    void captureException_shouldPassExceptionInContext() {
-        Counter counter = JsonConverter.fromJsonFile("/data/counter-annot-basic.json", Counter.class);
-        RuntimeException exception = new RuntimeException("error msg");
+    @DisplayName("Should Log Error on Exception in captureReturn")
+    void testCaptureReturnException() {
+        Counter counter = JsonConverter.read(
+                "src/test/resources/json/counter-enabled.json", Counter.class
+        );
 
+        when(joinPoint.getSignature()).thenThrow(new RuntimeException("Test Exception"));
+
+        counterAspect.captureReturn(joinPoint, counter, "GET");
+
+        assertEquals(1, listAppender.list.size());
+        assertEquals("Error while capturing Counter Metrics from Return: Test Exception", listAppender.list.get(0).getFormattedMessage());
+        assertEquals("Test Exception", listAppender.list.get(0).getThrowableProxy().getMessage());
+    }
+
+    @Test
+    @DisplayName("Should Log Error on Exception in captureException")
+    void testCaptureExceptionException() {
+        Counter counter = JsonConverter.read(
+                "src/test/resources/json/counter-enabled.json", Counter.class
+        );
+
+        when(joinPoint.getSignature()).thenThrow(new RuntimeException("Test Exception"));
+
+        Throwable exception = new RuntimeException("Original Exception");
         counterAspect.captureException(joinPoint, counter, exception);
 
-        ArgumentCaptor<StandardEvaluationContext> contextCaptor =
-                ArgumentCaptor.forClass(StandardEvaluationContext.class);
-        verify(metricsService).record(eq(counter), contextCaptor.capture());
-
-        StandardEvaluationContext capturedContext = contextCaptor.getValue();
-        assertThat(capturedContext.lookupVariable("error")).isEqualTo(exception);
-        assertThat(capturedContext.lookupVariable("result")).isNull();
+        assertEquals(1, listAppender.list.size());
+        assertEquals("Error while capturing Counter Metrics from Exception: Test Exception", listAppender.list.get(0).getFormattedMessage());
+        assertEquals("Test Exception", listAppender.list.get(0).getThrowableProxy().getMessage());
     }
-
-    /**
-     * Verifies that method arguments from the {@link JoinPoint} are registered
-     * as named variables in the SpEL context.
-     */
-    @Test
-    void captureReturn_withMethodArguments_shouldSetArgsInContext() {
-        when(methodSignature.getParameterNames()).thenReturn(new String[]{"orderId"});
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"ORD-42"});
-
-        Counter counter = JsonConverter.fromJsonFile("/data/counter-annot-basic.json", Counter.class);
-
-        counterAspect.captureReturn(joinPoint, counter, null);
-
-        ArgumentCaptor<StandardEvaluationContext> contextCaptor =
-                ArgumentCaptor.forClass(StandardEvaluationContext.class);
-        verify(metricsService).record(eq(counter), contextCaptor.capture());
-
-        assertThat(contextCaptor.getValue().lookupVariable("orderId")).isEqualTo("ORD-42");
-    }
-
-    /**
-     * Verifies that a {@code null} return value is correctly bound as {@code #result = null}
-     * in the SpEL context.
-     */
-    @Test
-    void captureReturn_withNullResult_shouldSetNullResultInContext() {
-        Counter counter = JsonConverter.fromJsonFile("/data/counter-annot-basic.json", Counter.class);
-
-        counterAspect.captureReturn(joinPoint, counter, null);
-
-        ArgumentCaptor<StandardEvaluationContext> contextCaptor =
-                ArgumentCaptor.forClass(StandardEvaluationContext.class);
-        verify(metricsService).record(eq(counter), contextCaptor.capture());
-
-        assertThat(contextCaptor.getValue().lookupVariable("result")).isNull();
-    }
-
 }

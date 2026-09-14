@@ -61,6 +61,20 @@
 
         <!-- Test plugin versions -->
         <jacoco.version>0.8.13</jacoco.version>
+        <sonar.maven.plugin.version>4.0.0.4121</sonar.maven.plugin.version>
+        <pitest.maven.version>1.25.9</pitest.maven.version>
+        <pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+
+        <!--    Sonar properties (resolved from .env locally, or -D flags in prod)    -->
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.organization>yubrajsahoo</sonar.organization>
+        <sonar.projectKey>yubrajsahoo_smf4j</sonar.projectKey>
+        <!--suppress UnresolvedMavenProperty -->
+        <sonar.token>${SONAR_TOKEN}</sonar.token>
+
+        <!-- Disable testCompileSourceRoots warning -->
+        <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
     </properties>
 
     <!-- Global dependencies common to all modules (usually test deps or very common APIs) -->

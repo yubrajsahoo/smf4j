@@ -68,7 +68,7 @@ public class CounterAspect {
      * Advice that executes upon successful return of a method annotated with {@link Counter}.
      * <p>
      * Creates a SpEL evaluation context populated with method parameters and the return value (as {@code #result}),
-     * then invokes {@link MetricsService#record(Counter, StandardEvaluationContext)}.
+     * then invokes {@link MetricsService#recordMetrics(Counter, StandardEvaluationContext)}.
      * </p>
      *
      * @param joinPoint the AOP join point representing the method invocation
@@ -84,9 +84,9 @@ public class CounterAspect {
             StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
                     .buildContext(joinPoint, result, null, beanResolver);
 
-            metricsService.record(counter, standardEvaluationContext);
-        } catch (Throwable throwable) {
-            log.error("Error while capturing Counter Metrics from Return: {}", throwable.getMessage(), throwable);
+            metricsService.recordMetrics(counter, standardEvaluationContext);
+        } catch (Exception exception) {
+            log.error("Error while capturing Counter Metrics from Return: {}", exception.getMessage(), exception);
         }
     }
 
@@ -94,25 +94,25 @@ public class CounterAspect {
      * Advice that executes when a method annotated with {@link Counter} throws an exception.
      * <p>
      * Creates a SpEL evaluation context populated with method parameters and the thrown exception (as {@code #error}),
-     * then invokes {@link MetricsService#record(Counter, StandardEvaluationContext)}.
+     * then invokes {@link MetricsService#recordMetrics(Counter, StandardEvaluationContext)}.
      * </p>
      *
      * @param joinPoint the AOP join point representing the method invocation
      * @param counter   the {@link Counter} annotation on the intercepted method
-     * @param exception the exception thrown during method execution
+     * @param throwable the exception thrown during method execution
      */
     @AfterThrowing(
             pointcut = "@annotation(counter)",
             throwing = "exception"
     )
-    public void captureException(JoinPoint joinPoint, Counter counter, Throwable exception) {
+    public void captureException(JoinPoint joinPoint, Counter counter, Throwable throwable) {
         try {
             StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
-                    .buildContext(joinPoint, null, exception, beanResolver);
+                    .buildContext(joinPoint, null, throwable, beanResolver);
 
-            metricsService.record(counter, standardEvaluationContext);
-        } catch (Throwable throwable) {
-            log.error("Error while capturing Counter Metrics from Exception: {}", throwable.getMessage(), throwable);
+            metricsService.recordMetrics(counter, standardEvaluationContext);
+        } catch (Exception exception) {
+            log.error("Error while capturing Counter Metrics from Exception: {}", exception.getMessage(), exception);
         }
     }
 }

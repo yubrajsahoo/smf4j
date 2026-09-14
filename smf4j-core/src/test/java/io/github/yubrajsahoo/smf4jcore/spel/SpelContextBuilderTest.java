@@ -1,4 +1,3 @@
-
 /*
  *
  *  * Copyright 2024 Yubraj Sahoo
@@ -19,176 +18,166 @@
 
 package io.github.yubrajsahoo.smf4jcore.spel;
 
+import io.github.yubrajsahoo.smf4jcore.autoconfigure.Smf4jAutoConfiguration;
+import io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.expression.BeanResolver;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Unit tests for {@link SpelContextBuilder}.
- * <p>
- * Validates that the builder correctly populates a {@link StandardEvaluationContext}
- * with method arguments, return values ({@code #result}), exceptions ({@code #error}),
- * root cause ({@code #rootError}), and an optional {@code BeanResolver}.
- * </p>
- *
- * @author Yubraj Sahoo
- * @version 0.0.1
- * @since 0.0.1
- * @see SpelContextBuilder
- */
+@DisplayName("SpelContextBuilder Unit Test")
+@SpringBootTest(classes = Smf4jAutoConfiguration.class)
 class SpelContextBuilderTest {
 
-    /**
-     * Verifies that the {@code #result} variable is set to the provided return value.
-     */
-    @Test
-    void buildContext_shouldSetResultVariable() {
-        String result = "success";
+    @Mock
+    private BeanResolver beanResolver;
 
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, result, null, null);
+    @Mock
+    private JoinPoint joinPoint;
 
-        assertThat(context.lookupVariable("result")).isEqualTo("success");
+    @Mock
+    private MethodSignature methodSignature;
+
+    @BeforeEach
+    void setUp() {
+        Mockito.reset(joinPoint, methodSignature, beanResolver);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
     }
 
-    /**
-     * Verifies that the {@code #error} variable is set to the provided exception.
-     */
     @Test
-    void buildContext_shouldSetErrorVariable() {
-        RuntimeException error = new RuntimeException("test error");
+    @DisplayName("testBuildContext with all valid inputs")
+    void testBuildContext() {
+        String[] paramNames = {"userId", "isActive"};
+        Object[] args = {123L, true};
 
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null, error, null);
+        when(methodSignature.getParameterNames()).thenReturn(paramNames);
+        when(methodSignature.getName()).thenReturn("testMethod");
+        when(joinPoint.getArgs()).thenReturn(args);
 
-        assertThat(context.lookupVariable("error")).isEqualTo(error);
+        Object result = "Success";
+        Throwable rootCause = new IllegalArgumentException("Root cause");
+        Throwable error = new RuntimeException("Outer error", rootCause);
+
+        StandardEvaluationContext context = SpelContextBuilder.buildContext(
+                joinPoint, result, error, beanResolver
+        );
+
+        assertEquals(123L, context.lookupVariable("userId"));
+        assertEquals(true, context.lookupVariable("isActive"));
+        assertEquals("Success", context.lookupVariable(MetricsConstant.RESULT));
+        assertSame(error, context.lookupVariable(MetricsConstant.ERROR));
+        assertSame(rootCause, context.lookupVariable(MetricsConstant.ROOT_ERROR));
+        assertSame(beanResolver, context.getBeanResolver());
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertSame(methodSignature, context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertEquals("testMethod", context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
-    /**
-     * Verifies that the {@code #rootError} variable is set to the deepest cause
-     * of a wrapped exception chain.
-     */
     @Test
-    void buildContext_shouldSetRootErrorToRootCause() {
-        RuntimeException rootCause = new RuntimeException("root cause");
-        RuntimeException wrapper = new RuntimeException("wrapper", rootCause);
+    @DisplayName("buildContext should handle null joinPoint")
+    void buildContext_withNullJoinPoint() {
+        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, "Success", null, null);
 
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null, wrapper, null);
-
-        assertThat(context.lookupVariable("rootError")).isEqualTo(rootCause);
+        assertEquals("Success", context.lookupVariable(MetricsConstant.RESULT));
+        assertNull(context.lookupVariable(MetricsConstant.ERROR));
+        assertNull(context.lookupVariable(MetricsConstant.ROOT_ERROR));
+        assertNull(context.getBeanResolver());
+        assertNull(context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
-    /**
-     * Verifies that {@code #rootError} is {@code null} when no exception is provided.
-     */
     @Test
-    void buildContext_withNoError_shouldSetRootErrorToNull() {
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, "result", null, null);
-
-        assertThat(context.lookupVariable("rootError")).isNull();
-    }
-
-    /**
-     * Verifies that {@code #result} is {@code null} when no return value is provided.
-     */
-    @Test
-    void buildContext_withNullResult_shouldSetResultToNull() {
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null, null, null);
-
-        assertThat(context.lookupVariable("result")).isNull();
-    }
-
-    /**
-     * Verifies that method parameter names and values from the {@link JoinPoint}
-     * are registered as variables in the context.
-     */
-    @Test
-    void buildContext_withJoinPoint_shouldSetMethodArguments() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        MethodSignature signature = mock(MethodSignature.class);
-
-        when(joinPoint.getSignature()).thenReturn(signature);
-        when(signature.getParameterNames()).thenReturn(new String[]{"orderId", "amount"});
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"ORD-123", 99.99});
+    @DisplayName("buildContext should handle non-MethodSignature gracefully")
+    void buildContext_withNonMethodSignature() {
+        Signature plainSignature = mock(Signature.class);
+        when(joinPoint.getSignature()).thenReturn(plainSignature);
 
         StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null, null, null);
 
-        assertThat(context.lookupVariable("orderId")).isEqualTo("ORD-123");
-        assertThat(context.lookupVariable("amount")).isEqualTo(99.99);
+        assertNull(context.lookupVariable(MetricsConstant.RESULT)); // Just verify context creation didn't throw
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
-    /**
-     * Verifies that a {@code null} {@link JoinPoint} does not cause a failure
-     * and the standard variables ({@code #result}, {@code #error}) are still set.
-     */
     @Test
-    void buildContext_withNullJoinPoint_shouldNotFail() {
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, "result", null, null);
-
-        assertThat(context.lookupVariable("result")).isEqualTo("result");
-    }
-
-    /**
-     * Verifies that a {@link JoinPoint} whose signature returns {@code null}
-     * parameter names is handled gracefully.
-     */
-    @Test
-    void buildContext_withNullParameterNames_shouldNotFail() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        MethodSignature signature = mock(MethodSignature.class);
-
-        when(joinPoint.getSignature()).thenReturn(signature);
-        when(signature.getParameterNames()).thenReturn(null);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"value"});
+    @DisplayName("buildContext should handle null parameters or arguments gracefully")
+    void buildContext_withNullArgsAndParams() {
+        when(methodSignature.getParameterNames()).thenReturn(null);
+        when(joinPoint.getArgs()).thenReturn(null);
+        when(methodSignature.getName()).thenReturn("testMethod");
 
         StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null, null, null);
 
-        // Should not throw; result/error are still set
-        assertThat(context.lookupVariable("result")).isNull();
+        assertNull(context.lookupVariable(MetricsConstant.RESULT));
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertSame(methodSignature, context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertEquals("testMethod", context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
-    /**
-     * Verifies that deeply chained exceptions (3+ levels) correctly resolve
-     * to the innermost root cause as {@code #rootError}.
-     */
     @Test
-    void buildContext_withDeeplyChainedExceptions_shouldFindRootCause() {
-        RuntimeException root = new RuntimeException("root");
-        RuntimeException mid = new RuntimeException("mid", root);
-        RuntimeException top = new RuntimeException("top", mid);
+    @DisplayName("buildContext should handle null arguments gracefully")
+    void buildContext_withNullArgs() {
+        when(methodSignature.getParameterNames()).thenReturn(new String[]{"userId"});
+        when(joinPoint.getArgs()).thenReturn(null);
+        when(methodSignature.getName()).thenReturn("testMethod");
 
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null, top, null);
+        StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null, null, null);
 
-        assertThat(context.lookupVariable("rootError")).isEqualTo(root);
+        assertNull(context.lookupVariable("userId"));
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertSame(methodSignature, context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertEquals("testMethod", context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
-    /**
-     * Verifies that an exception with no cause resolves to itself as the root error.
-     */
     @Test
-    void buildContext_withSelfCausedException_shouldReturnSameAsRootError() {
-        RuntimeException error = new RuntimeException("only error");
+    @DisplayName("buildContext should handle mismatched arguments and parameters lengths")
+    void buildContext_withMismatchedArgsAndParams() {
+        when(methodSignature.getParameterNames()).thenReturn(new String[]{"userId", "isActive"});
+        when(joinPoint.getArgs()).thenReturn(new Object[]{123L}); // only 1 arg provided
+        when(methodSignature.getName()).thenReturn("testMethod");
+
+        StandardEvaluationContext context = SpelContextBuilder.buildContext(joinPoint, null, null, null);
+
+        assertEquals(123L, context.lookupVariable("userId"));
+        assertNull(context.lookupVariable("isActive"));
+        assertSame(joinPoint, context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertSame(methodSignature, context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertEquals("testMethod", context.lookupVariable(MetricsConstant.METHOD_NAME));
+    }
+
+    @Test
+    @DisplayName("buildContext should correctly resolve error without nested cause")
+    void buildContext_withErrorNoCause() {
+        Throwable error = new RuntimeException("Single error");
 
         StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null, error, null);
 
-        assertThat(context.lookupVariable("rootError")).isEqualTo(error);
+        assertSame(error, context.lookupVariable(MetricsConstant.ERROR));
+        assertSame(error, context.lookupVariable(MetricsConstant.ROOT_ERROR));
+        assertNull(context.lookupVariable(MetricsConstant.JOIN_POINT));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
+        assertNull(context.lookupVariable(MetricsConstant.METHOD_NAME));
     }
 
-    /**
-     * Verifies that a non-null {@link org.springframework.expression.BeanResolver}
-     * is successfully assigned to the context without error.
-     */
     @Test
-    void buildContext_withBeanResolver_shouldSetBeanResolver() {
-        org.springframework.expression.BeanResolver resolver = mock(org.springframework.expression.BeanResolver.class);
-
-        StandardEvaluationContext context = SpelContextBuilder.buildContext(null, null, null, resolver);
-
-        // Verify that the context was created successfully with the resolver set
-        // (StandardEvaluationContext doesn't expose getBeanResolver, so we just verify no exception)
-        assertThat(context).isNotNull();
+    @DisplayName("Test private constructor")
+    void testPrivateConstructor() throws Exception {
+        java.lang.reflect.Constructor<SpelContextBuilder> constructor = SpelContextBuilder.class.getDeclaredConstructor();
+        assertTrue(java.lang.reflect.Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }

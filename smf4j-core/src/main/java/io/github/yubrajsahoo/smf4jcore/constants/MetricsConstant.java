@@ -35,12 +35,12 @@ public final class MetricsConstant {
     public static final String NONE = "none";
 
     /**
-     * Default message prefix used by {@link io.github.yubrajsahoo.smf4jcore.utils.MetricsLogger} when logging metrics.
+     * Default message prefix used by {@link io.github.yubrajsahoo.smf4jcore.logger.MetricsLogger} when logging metrics.
      */
     public static final String DEFAULT_LOG_MESSAGE = "Metrics Logs For With->";
 
     /**
-     * Default message prefix used by {@link io.github.yubrajsahoo.smf4jcore.utils.MetricsLogger}
+     * Default message prefix used by {@link io.github.yubrajsahoo.smf4jcore.logger.MetricsLogger}
      * when logging metrics that are disabled.
      */
     public static final String DEFAULT_DISABLED_LOG_MESSAGE = "Metrics Disabled For->";
@@ -57,6 +57,27 @@ public final class MetricsConstant {
      * </p>
      */
     public static final List<String> ALLOWED_SPEL_DESIGNS = List.of("@", "#", "T");
+
+    public static final String JOIN_POINT = "joinPoint";
+
+    public static final String METHOD_SIGNATURE = "methodSignature";
+
+    public static final String METHOD_NAME = "methodName";
+
+    /**
+     * Variable name used in SpEL evaluation contexts to represent the return value of an intercepted method.
+     */
+    public static final String RESULT = "result";
+
+    /**
+     * Variable name used in SpEL evaluation contexts to represent the exception thrown by an intercepted method.
+     */
+    public static final String ERROR = "error";
+
+    /**
+     * Variable name used in SpEL evaluation contexts to represent the root cause of an exception thrown by an intercepted method.
+     */
+    public static final String ROOT_ERROR = "rootError";
 
     /**
      * Private constructor to prevent instantiation of utility class.

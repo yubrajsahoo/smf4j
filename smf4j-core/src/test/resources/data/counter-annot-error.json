@@ -1,6 +1,0 @@
-{
-  "name": "error.counter",
-  "description": "Error",
-  "increment": 1,
-  "enable": true
-}

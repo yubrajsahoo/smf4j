@@ -68,7 +68,7 @@ public class CounterMeterService implements MeterService {
      * @throws IllegalArgumentException if {@code metrics} is {@code null} or not an instance of {@link CounterMetrics}
      */
     @Override
-    public void record(Metrics metrics) {
+    public void recordMetrics(Metrics metrics) {
         if (metrics instanceof CounterMetrics counterMetrics) {
             Counter.builder(counterMetrics.getName())
                     .description(counterMetrics.getDescription())

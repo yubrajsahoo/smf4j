@@ -18,196 +18,145 @@
 
 package io.github.yubrajsahoo.smf4jcore.spel;
 
-import io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant;
+import io.github.yubrajsahoo.smf4jcore.autoconfigure.Smf4jAutoConfiguration;
+import io.github.yubrajsahoo.smf4jcore.domain.CounterMetrics;
+import helper.JsonConverter;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.expression.BeanResolver;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
-/**
- * Unit tests for {@link SpelEvaluator}.
- * <p>
- * Validates expression evaluation against a {@link StandardEvaluationContext},
- * including literal passthrough, variable resolution, nested property access,
- * type expressions, expression caching, and graceful fallback on errors.
- * </p>
- *
- * @author Yubraj Sahoo
- * @version 0.0.1
- * @since 0.0.1
- * @see SpelEvaluator
- * @see MetricsConstant#NONE
- */
+@DisplayName("SpelEvaluator Unit Test")
+@SpringBootTest(classes = Smf4jAutoConfiguration.class)
 class SpelEvaluatorTest {
 
+    @Autowired
     private SpelEvaluator spelEvaluator;
-    private StandardEvaluationContext context;
 
-    /**
-     * Initialises a {@link SpelEvaluator} with a fresh {@link SpelExpressionParser}
-     * and an empty {@link StandardEvaluationContext} before each test.
-     */
+
+    @Mock
+    private BeanResolver beanResolver;
+
+    @Mock
+    private JoinPoint joinPoint;
+
+    @Mock
+    private MethodSignature methodSignature;
+
     @BeforeEach
     void setUp() {
-        ExpressionParser parser = new SpelExpressionParser();
-        spelEvaluator = new SpelEvaluator(parser);
-        context = new StandardEvaluationContext();
+        Mockito.reset(joinPoint, methodSignature, beanResolver);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
     }
 
-    /**
-     * Verifies that a {@code null} expression returns the fallback value {@value MetricsConstant#NONE}.
-     */
     @Test
-    void evaluate_withNullExpression_shouldReturnNone() {
-        String result = spelEvaluator.evaluate(null, context);
-        assertThat(result).isEqualTo(MetricsConstant.NONE);
+    @DisplayName("testEvaluate with literal expression")
+    void testEvaluate_Literal() {
+        String expression = "literalInput";
+        String parsedExpression = spelEvaluator.evaluate(expression, buildContext(null, null));
+
+        assertEquals(expression, parsedExpression);
     }
 
-    /**
-     * Verifies that an empty string expression returns the fallback value.
-     */
     @Test
-    void evaluate_withEmptyExpression_shouldReturnNone() {
-        String result = spelEvaluator.evaluate("", context);
-        assertThat(result).isEqualTo(MetricsConstant.NONE);
+    @DisplayName("testEvaluate with SpEL expression result string")
+    void testEvaluate_Spel_Result() {
+        String result = "SUCCESS";
+        String expression = "#result";
+
+        String parsedExpression = spelEvaluator.evaluate(expression, buildContext(result, null));
+
+        assertEquals(result, parsedExpression);
     }
 
-    /**
-     * Verifies that a blank (whitespace-only) expression returns the fallback value.
-     */
     @Test
-    void evaluate_withBlankExpression_shouldReturnNone() {
-        String result = spelEvaluator.evaluate("   ", context);
-        assertThat(result).isEqualTo(MetricsConstant.NONE);
+    @DisplayName("testEvaluate with SpEL expression with result object")
+    void testEvaluate_Spel_Result_Object() {
+        CounterMetrics result = JsonConverter.read(
+                "src/test/resources/json/counter-metrics.json", CounterMetrics.class
+        );
+
+        String expression = "#result.increment";
+
+        String parsedExpression = spelEvaluator.evaluate(expression, buildContext(result, null));
+
+        assertEquals("3", parsedExpression);
     }
 
-    /**
-     * Verifies that a literal string (not starting with {@code #}, {@code @}, or {@code T})
-     * is returned as-is without SpEL parsing.
-     */
     @Test
-    void evaluate_withLiteralValue_shouldReturnLiteral() {
-        String result = spelEvaluator.evaluate("us-east-1", context);
-        assertThat(result).isEqualTo("us-east-1");
+    @DisplayName("testEvaluate with SpEL expression with result object")
+    void testEvaluate_Spel_Error() {
+        RuntimeException exception = new RuntimeException("Demo Message");
+
+        String expression = "#error.getMessage()";
+
+        String parsedExpression = spelEvaluator.evaluate(expression, buildContext(null, exception));
+
+        assertEquals(exception.getMessage(), parsedExpression);
     }
 
-    /**
-     * Verifies that a {@code #variable} expression resolves the named variable
-     * from the evaluation context.
-     */
     @Test
-    void evaluate_withHashVariable_shouldResolveFromContext() {
-        context.setVariable("userId", "user-42");
+    @DisplayName("testEvaluate with SpEL expression with bean reference (@)")
+    void testEvaluate_Spel_Bean_Reference() throws org.springframework.expression.AccessException {
+        CounterMetrics mockBean = new CounterMetrics();
+        mockBean.setIncrement(5L);
+        when(beanResolver.resolve(Mockito.any(), Mockito.eq("myBean"))).thenReturn(mockBean);
 
-        String result = spelEvaluator.evaluate("#userId", context);
-        assertThat(result).isEqualTo("user-42");
+        String expression = "@myBean.increment";
+        String parsedExpression = spelEvaluator.evaluate(expression, buildContext(null, null));
+
+        assertEquals("5", parsedExpression);
     }
 
-    /**
-     * Verifies that a nested property access expression (e.g. {@code #result.status})
-     * resolves to the property value of the context variable.
-     */
     @Test
-    void evaluate_withNestedProperty_shouldResolveNestedValue() {
-        context.setVariable("result", new TestResult("SUCCESS"));
+    @DisplayName("testEvaluate with SpEL expression with type reference (T)")
+    void testEvaluate_Spel_Type_Reference() {
+        String expression = "T(java.lang.String).valueOf(100)";
+        String parsedExpression = spelEvaluator.evaluate(expression, buildContext(null, null));
 
-        String result = spelEvaluator.evaluate("#result.status", context);
-        assertThat(result).isEqualTo("SUCCESS");
+        assertEquals("100", parsedExpression);
     }
 
-    /**
-     * Verifies that a variable explicitly set to {@code null} returns the fallback value.
-     */
     @Test
-    void evaluate_withNullVariable_shouldReturnNone() {
-        context.setVariable("missing", null);
-
-        String result = spelEvaluator.evaluate("#missing", context);
-        assertThat(result).isEqualTo(MetricsConstant.NONE);
+    @DisplayName("evaluate should return none when expression is null, empty or blank")
+    void testEvaluate_EmptyOrNull() {
+        assertEquals("none", spelEvaluator.evaluate(null, buildContext(null, null)));
+        assertEquals("none", spelEvaluator.evaluate("", buildContext(null, null)));
+        assertEquals("none", spelEvaluator.evaluate("   ", buildContext(null, null)));
     }
 
-    /**
-     * Verifies that referencing an undefined variable returns the fallback value
-     * rather than throwing an exception.
-     */
     @Test
-    void evaluate_withUndefinedVariable_shouldReturnNone() {
-        String result = spelEvaluator.evaluate("#undefinedVar", context);
-        assertThat(result).isEqualTo(MetricsConstant.NONE);
+    @DisplayName("evaluate should return none when SpEL evaluates to null")
+    void testEvaluate_NullResult() {
+        String expression = "#nullVar"; // undefined variable evaluates to null
+        assertEquals("none", spelEvaluator.evaluate(expression, buildContext(null, null)));
     }
 
-    /**
-     * Verifies that a {@code T(type).member} expression is evaluated correctly,
-     * e.g. accessing {@code Math.PI}.
-     */
     @Test
-    void evaluate_withSpelTypeExpression_shouldEvaluate() {
-        String result = spelEvaluator.evaluate("T(java.lang.Math).PI", context);
-        assertThat(result).isEqualTo(String.valueOf(Math.PI));
+    @DisplayName("evaluate should return none when SpEL evaluation throws exception")
+    void testEvaluate_Exception() {
+        String expression = "#result.nonExistentMethod()"; // throws SpelEvaluationException
+        assertEquals("none", spelEvaluator.evaluate(expression, buildContext("Success", null)));
     }
 
-    /**
-     * Verifies that evaluating the same expression twice returns consistent results,
-     * exercising the internal expression cache.
-     */
     @Test
-    void evaluate_shouldCacheExpressions() {
-        context.setVariable("x", "hello");
-
-        String result1 = spelEvaluator.evaluate("#x", context);
-        String result2 = spelEvaluator.evaluate("#x", context);
-
-        assertThat(result1).isEqualTo("hello");
-        assertThat(result2).isEqualTo("hello");
+    @DisplayName("evaluate should return none when SpEL parsing throws exception")
+    void testEvaluate_ParseException() {
+        String expression = "#invalid("; // throws SpelParseException
+        assertEquals("none", spelEvaluator.evaluate(expression, buildContext(null, null)));
     }
 
-    /**
-     * Verifies that a non-string variable (e.g. {@link Integer}) is converted
-     * to its string representation via {@code toString()}.
-     */
-    @Test
-    void evaluate_withIntegerVariable_shouldReturnStringRepresentation() {
-        context.setVariable("count", 42);
-
-        String result = spelEvaluator.evaluate("#count", context);
-        assertThat(result).isEqualTo("42");
-    }
-
-    /**
-     * Verifies that an expression referencing a deeply nested path on a null variable
-     * returns the fallback value rather than throwing.
-     */
-    @Test
-    void evaluate_withInvalidSpelExpression_shouldReturnNone() {
-        String result = spelEvaluator.evaluate("#invalid.deeply.nested.path", context);
-        assertThat(result).isEqualTo(MetricsConstant.NONE);
-    }
-
-    /**
-     * Simple test POJO for validating nested property access in SpEL expressions.
-     */
-    public static class TestResult {
-        private final String status;
-
-        /**
-         * Constructs a new {@link TestResult} with the given status.
-         *
-         * @param status the status value
-         */
-        public TestResult(String status) {
-            this.status = status;
-        }
-
-        /**
-         * Returns the status value.
-         *
-         * @return the status
-         */
-        public String getStatus() {
-            return status;
-        }
+    private StandardEvaluationContext buildContext(Object result, Throwable error) {
+        return SpelContextBuilder.buildContext(joinPoint, result, error, beanResolver);
     }
 }

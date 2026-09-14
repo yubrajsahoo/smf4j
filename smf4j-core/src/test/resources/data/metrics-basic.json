@@ -1,9 +1,0 @@
-{
-  "name": "test.counter",
-  "description": "Test counter",
-  "tags": {
-    "env": "test"
-  },
-  "increment": 1,
-  "enabled": true
-}

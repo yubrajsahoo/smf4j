@@ -1,8 +1,8 @@
 package io.github.yubrajsahoo.smf4jcore.aspect;
 
-import io.github.yubrajsahoo.smf4jcore.annotation.Counter;
-import io.github.yubrajsahoo.smf4jcore.annotation.Tags;
-import io.github.yubrajsahoo.smf4jcore.annotation.Timer;
+import io.github.yubrajsahoo.smf4jcore.counter.annotation.Counter;
+import io.github.yubrajsahoo.smf4jcore.core.annotation.Tags;
+import io.github.yubrajsahoo.smf4jcore.timer.annotation.Timer;
 import io.github.yubrajsahoo.smf4jcore.autoconfigure.Smf4jAutoConfiguration;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;

@@ -18,20 +18,24 @@
 
 package io.github.yubrajsahoo.smf4jcore.autoconfigure;
 
-import io.github.yubrajsahoo.smf4jcore.aspect.CounterAspect;
-import io.github.yubrajsahoo.smf4jcore.aspect.TimerAspect;
-import io.github.yubrajsahoo.smf4jcore.factory.MeterFactory;
-import io.github.yubrajsahoo.smf4jcore.meter.service.MeterService;
-import io.github.yubrajsahoo.smf4jcore.meter.service.impl.TimerMeterService;
-import io.github.yubrajsahoo.smf4jcore.meter.service.impl.CounterMeterService;
-import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
-import io.github.yubrajsahoo.smf4jcore.service.impl.CounterMetricsService;
-import io.github.yubrajsahoo.smf4jcore.service.impl.TimerMetricsService;
-import io.github.yubrajsahoo.smf4jcore.service.impl.GaugeMetricsService;
-import io.github.yubrajsahoo.smf4jcore.logger.MetricsLogger;
-import io.github.yubrajsahoo.smf4jcore.logger.impl.DefaultMetricsLogger;
-import io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder;
-import io.github.yubrajsahoo.smf4jcore.spel.SpelEvaluator;
+import io.github.yubrajsahoo.smf4jcore.core.factory.MeterFactory;
+import io.github.yubrajsahoo.smf4jcore.core.logger.MetricsLogger;
+import io.github.yubrajsahoo.smf4jcore.core.logger.impl.DefaultMetricsLogger;
+import io.github.yubrajsahoo.smf4jcore.core.service.MeterService;
+import io.github.yubrajsahoo.smf4jcore.core.service.MetricsService;
+import io.github.yubrajsahoo.smf4jcore.core.spel.SpelContextBuilder;
+import io.github.yubrajsahoo.smf4jcore.core.spel.SpelEvaluator;
+import io.github.yubrajsahoo.smf4jcore.counter.annotation.Counter;
+import io.github.yubrajsahoo.smf4jcore.counter.aspect.CounterAspect;
+import io.github.yubrajsahoo.smf4jcore.counter.service.CounterMeterService;
+import io.github.yubrajsahoo.smf4jcore.counter.service.CounterMetricsService;
+import io.github.yubrajsahoo.smf4jcore.gauge.processer.GaugeAnnotationProcessor;
+import io.github.yubrajsahoo.smf4jcore.gauge.service.GaugeMeterService;
+import io.github.yubrajsahoo.smf4jcore.gauge.service.GaugeMetricsService;
+import io.github.yubrajsahoo.smf4jcore.timer.annotation.Timer;
+import io.github.yubrajsahoo.smf4jcore.timer.aspect.TimerAspect;
+import io.github.yubrajsahoo.smf4jcore.timer.service.TimerMeterService;
+import io.github.yubrajsahoo.smf4jcore.timer.service.TimerMetricsService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -72,12 +76,6 @@ import java.util.List;
 @AutoConfiguration
 @EnableAspectJAutoProxy
 public class Smf4jAutoConfiguration {
-
-    /**
-     * Default constructor for Smf4jAutoConfiguration.
-     */
-    public Smf4jAutoConfiguration() {
-    }
 
     /**
      * Registers a fallback {@link SimpleMeterRegistry} if no {@link MeterRegistry} bean is currently present in the application context.
@@ -138,15 +136,15 @@ public class Smf4jAutoConfiguration {
     }
 
     /**
-     * Creates a {@link io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService} bean if none is defined.
+     * Creates a {@link GaugeMeterService} bean if none is defined.
      *
      * @param meterRegistry the Micrometer meter registry
-     * @return a new {@link io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService} instance
+     * @return a new {@link GaugeMeterService} instance
      */
     @Bean
-    @ConditionalOnMissingBean(io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService.class)
-    public io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService gaugeMeterService(MeterRegistry meterRegistry) {
-        return new io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService(meterRegistry);
+    @ConditionalOnMissingBean(GaugeMeterService.class)
+    public GaugeMeterService gaugeMeterService(MeterRegistry meterRegistry) {
+        return new GaugeMeterService(meterRegistry);
     }
 
     /**
@@ -215,10 +213,10 @@ public class Smf4jAutoConfiguration {
     }
 
     /**
-     * Creates a {@link CounterAspect} bean to intercept methods annotated with {@link io.github.yubrajsahoo.smf4jcore.annotation.Counter}.
+     * Creates a {@link CounterAspect} bean to intercept methods annotated with {@link Counter}.
      *
      * @param counterMetricsService the metrics service used to process intercepted metric events
-     * @param beanResolver   the bean resolver for resolving Spring beans in SpEL expressions
+     * @param beanResolver          the bean resolver for resolving Spring beans in SpEL expressions
      * @return a new {@link CounterAspect} instance
      */
     @Bean
@@ -228,10 +226,10 @@ public class Smf4jAutoConfiguration {
     }
 
     /**
-     * Creates a {@link TimerAspect} bean to intercept methods annotated with {@link io.github.yubrajsahoo.smf4jcore.annotation.Timer}.
+     * Creates a {@link TimerAspect} bean to intercept methods annotated with {@link Timer}.
      *
      * @param timerMetricsService the metrics service used to process intercepted metric events
-     * @param beanResolver   the bean resolver for resolving Spring beans in SpEL expressions
+     * @param beanResolver        the bean resolver for resolving Spring beans in SpEL expressions
      * @return a new {@link TimerAspect} instance
      */
     @Bean
@@ -241,16 +239,16 @@ public class Smf4jAutoConfiguration {
     }
 
     /**
-     * Creates a {@link io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor} bean.
+     * Creates a {@link GaugeAnnotationProcessor} bean.
      *
      * @param gaugeMetricsService the metrics service used to process gauge metrics
-     * @param beanResolver   the bean resolver for resolving Spring beans in SpEL expressions
-     * @return a new {@link io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor} instance
+     * @param beanResolver        the bean resolver for resolving Spring beans in SpEL expressions
+     * @return a new {@link GaugeAnnotationProcessor} instance
      */
     @Bean
-    @ConditionalOnMissingBean(io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor.class)
-    public io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor gaugeAnnotationProcessor(GaugeMetricsService gaugeMetricsService, BeanResolver beanResolver) {
-        return new io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor(gaugeMetricsService, beanResolver);
+    @ConditionalOnMissingBean(GaugeAnnotationProcessor.class)
+    public GaugeAnnotationProcessor gaugeAnnotationProcessor(GaugeMetricsService gaugeMetricsService, BeanResolver beanResolver) {
+        return new GaugeAnnotationProcessor(gaugeMetricsService, beanResolver);
     }
 
     /**

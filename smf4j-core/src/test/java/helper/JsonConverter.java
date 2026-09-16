@@ -72,23 +72,23 @@ public class JsonConverter {
             }
         });
 
-        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.annotation.Counter.class, CounterImpl.class);
-        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.annotation.Timer.class, TimerImpl.class);
-        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.annotation.Tags.class, TagsImpl.class);
+        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.counter.annotation.Counter.class, CounterImpl.class);
+        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.timer.annotation.Timer.class, TimerImpl.class);
+        module.addAbstractTypeMapping(io.github.yubrajsahoo.smf4jcore.core.annotation.Tags.class, TagsImpl.class);
 
         MAPPER.registerModule(module);
     }
 
-    public static class CounterImpl implements io.github.yubrajsahoo.smf4jcore.annotation.Counter {
+    public static class CounterImpl implements io.github.yubrajsahoo.smf4jcore.counter.annotation.Counter {
         private String name;
-        private String description = io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE;
-        private io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags = new io.github.yubrajsahoo.smf4jcore.annotation.Tags[0];
+        private String description = io.github.yubrajsahoo.smf4jcore.core.constant.MetricsConstant.NONE;
+        private io.github.yubrajsahoo.smf4jcore.core.annotation.Tags[] tags = new io.github.yubrajsahoo.smf4jcore.core.annotation.Tags[0];
         private long increment = 1;
         private boolean enable = true;
 
         @Override
         public Class<? extends java.lang.annotation.Annotation> annotationType() {
-            return io.github.yubrajsahoo.smf4jcore.annotation.Counter.class;
+            return io.github.yubrajsahoo.smf4jcore.counter.annotation.Counter.class;
         }
 
         @Override
@@ -102,7 +102,7 @@ public class JsonConverter {
         }
 
         @Override
-        public io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags() {
+        public io.github.yubrajsahoo.smf4jcore.core.annotation.Tags[] tags() {
             return tags;
         }
 
@@ -124,7 +124,7 @@ public class JsonConverter {
             this.description = description;
         }
 
-        public void setTags(io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags) {
+        public void setTags(io.github.yubrajsahoo.smf4jcore.core.annotation.Tags[] tags) {
             this.tags = tags;
         }
 
@@ -137,15 +137,15 @@ public class JsonConverter {
         }
     }
 
-    public static class TimerImpl implements io.github.yubrajsahoo.smf4jcore.annotation.Timer {
+    public static class TimerImpl implements io.github.yubrajsahoo.smf4jcore.timer.annotation.Timer {
         private String name;
-        private String description = io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE;
-        private io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags = new io.github.yubrajsahoo.smf4jcore.annotation.Tags[0];
+        private String description = io.github.yubrajsahoo.smf4jcore.core.constant.MetricsConstant.NONE;
+        private io.github.yubrajsahoo.smf4jcore.core.annotation.Tags[] tags = new io.github.yubrajsahoo.smf4jcore.core.annotation.Tags[0];
         private boolean enable = true;
 
         @Override
         public Class<? extends java.lang.annotation.Annotation> annotationType() {
-            return io.github.yubrajsahoo.smf4jcore.annotation.Timer.class;
+            return io.github.yubrajsahoo.smf4jcore.timer.annotation.Timer.class;
         }
 
         @Override
@@ -159,7 +159,7 @@ public class JsonConverter {
         }
 
         @Override
-        public io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags() {
+        public io.github.yubrajsahoo.smf4jcore.core.annotation.Tags[] tags() {
             return tags;
         }
 
@@ -176,7 +176,7 @@ public class JsonConverter {
             this.description = description;
         }
 
-        public void setTags(io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags) {
+        public void setTags(io.github.yubrajsahoo.smf4jcore.core.annotation.Tags[] tags) {
             this.tags = tags;
         }
 
@@ -185,13 +185,13 @@ public class JsonConverter {
         }
     }
 
-    public static class TagsImpl implements io.github.yubrajsahoo.smf4jcore.annotation.Tags {
-        private String key = io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE;
-        private String value = io.github.yubrajsahoo.smf4jcore.constants.MetricsConstant.NONE;
+    public static class TagsImpl implements io.github.yubrajsahoo.smf4jcore.core.annotation.Tags {
+        private String key = io.github.yubrajsahoo.smf4jcore.core.constant.MetricsConstant.NONE;
+        private String value = io.github.yubrajsahoo.smf4jcore.core.constant.MetricsConstant.NONE;
 
         @Override
         public Class<? extends java.lang.annotation.Annotation> annotationType() {
-            return io.github.yubrajsahoo.smf4jcore.annotation.Tags.class;
+            return io.github.yubrajsahoo.smf4jcore.core.annotation.Tags.class;
         }
 
         @Override

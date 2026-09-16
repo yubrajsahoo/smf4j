@@ -341,6 +341,69 @@ class MetricsServiceTest {
         assertDoesNotThrow(() -> metricsService.recordMetrics(sample, timer, buildContext(null, null)));
     }
 
+    @Test
+    @DisplayName("Should Not Store Any Gauge Metrics Due to Gauge Null")
+    void testRecordMetrics_Gauge_Null() {
+        metricsService.recordMetrics(null, new Object(), obj -> 1.0, buildContext(null, null));
+
+        io.micrometer.core.instrument.Gauge savedGauge = meterRegistry.find("test.gauge").gauge();
+        assertNull(savedGauge);
+    }
+
+    @Test
+    @DisplayName("Should Not Store Any Gauge Metrics Due to disabled")
+    void testRecordMetrics_Gauge_Disabled() {
+        io.github.yubrajsahoo.smf4jcore.annotation.Gauge gauge = mock(io.github.yubrajsahoo.smf4jcore.annotation.Gauge.class);
+        when(gauge.name()).thenReturn("test.gauge");
+        when(gauge.description()).thenReturn("Test Gauge");
+        when(gauge.enable()).thenReturn(false);
+        when(gauge.tags()).thenReturn(new io.github.yubrajsahoo.smf4jcore.annotation.Tags[0]);
+
+        metricsService.recordMetrics(gauge, new Object(), obj -> 1.0, buildContext(null, null));
+
+        //should log disabled log
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        assertTrue(formattedMessage.contains("Metrics Disabled For"));
+
+        io.micrometer.core.instrument.Gauge savedGauge = meterRegistry.find("test.gauge").gauge();
+        assertNull(savedGauge);
+    }
+
+    @Test
+    @DisplayName("Should Store Gauge Metrics")
+    void testRecordMetrics_Gauge_Enabled() {
+        io.github.yubrajsahoo.smf4jcore.annotation.Gauge gauge = mock(io.github.yubrajsahoo.smf4jcore.annotation.Gauge.class);
+        when(gauge.name()).thenReturn("test.gauge");
+        when(gauge.description()).thenReturn("Test Gauge");
+        when(gauge.enable()).thenReturn(true);
+        when(gauge.tags()).thenReturn(new io.github.yubrajsahoo.smf4jcore.annotation.Tags[0]);
+
+        Object testObj = new Object();
+        metricsService.recordMetrics(gauge, testObj, obj -> 42.0, buildContext(null, null));
+
+        //should log enabled log
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        assertTrue(formattedMessage.contains("Metrics Logs For With"));
+
+        io.micrometer.core.instrument.Gauge savedGauge = meterRegistry.find("test.gauge").gauge();
+        assertNotNull(savedGauge);
+        assertEquals(42.0, savedGauge.value());
+
+        io.micrometer.core.instrument.Meter.Id id = savedGauge.getId();
+        assertEquals("test.gauge", id.getName());
+        assertEquals("Test Gauge", id.getDescription());
+    }
+
+    @Test
+    @DisplayName("Should Handle Exception While Recording Gauge Metrics")
+    void testRecordMetrics_Gauge_Exception() {
+        io.github.yubrajsahoo.smf4jcore.annotation.Gauge gauge = mock(io.github.yubrajsahoo.smf4jcore.annotation.Gauge.class);
+        when(gauge.name()).thenReturn("test.gauge");
+        when(gauge.tags()).thenThrow(new RuntimeException("Simulated exception"));
+
+        assertDoesNotThrow(() -> metricsService.recordMetrics(gauge, new Object(), obj -> 1.0, buildContext(null, null)));
+    }
+
     private StandardEvaluationContext buildContext(Object result, Throwable error) {
         return SpelContextBuilder.buildContext(joinPoint, result, error, beanResolver);
     }

@@ -173,6 +173,38 @@ public class MetricsServiceImpl implements MetricsService {
     }
 
     /**
+     * Processes and records a gauge metric based on the metadata in {@link io.github.yubrajsahoo.smf4jcore.annotation.Gauge}.
+     */
+    @Override
+    public <T> void recordMetrics(io.github.yubrajsahoo.smf4jcore.annotation.Gauge gauge, T instance, java.util.function.ToDoubleFunction<T> function, StandardEvaluationContext context) {
+        if (gauge == null) {
+            log.warn("Cannot record metrics for null Gauge annotation");
+            return;
+        }
+        try {
+            Tags tags = evaluateTags(gauge.tags(), context);
+            
+            io.github.yubrajsahoo.smf4jcore.domain.GaugeMetrics<T> metrics = io.github.yubrajsahoo.smf4jcore.domain.GaugeMetrics.<T>builder(gauge.name(), instance, function)
+                    .description(gauge.description())
+                    .tags(tags)
+                    .enabled(gauge.enable())
+                    .build();
+
+            metricsLogger.log(metrics);
+
+            if (metrics.isEnabled()) {
+                meterFactory.getMeterService(MetricsType.GAUGE)
+                        .ifPresentOrElse(
+                                meterService -> meterService.recordMetrics(metrics),
+                                () -> log.warn("No MeterService found for metrics type: {}", MetricsType.GAUGE)
+                        );
+            }
+        } catch (Exception exception) {
+            log.error("Error while recording gauge metric '{}': {}", gauge.name(), exception.getMessage(), exception);
+        }
+    }
+
+    /**
      * Evaluates tag expressions defined in annotations against the given SpEL evaluation context.
      *
      * @param tags    the array of {@link io.github.yubrajsahoo.smf4jcore.annotation.Tags} to evaluate

@@ -130,6 +130,18 @@ public class Smf4jAutoConfiguration {
     }
 
     /**
+     * Creates a {@link io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService} bean if none is defined.
+     *
+     * @param meterRegistry the Micrometer meter registry
+     * @return a new {@link io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService.class)
+    public io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService gaugeMeterService(MeterRegistry meterRegistry) {
+        return new io.github.yubrajsahoo.smf4jcore.meter.service.impl.GaugeMeterService(meterRegistry);
+    }
+
+    /**
      * Creates a {@link MeterFactory} bean by aggregating all available {@link MeterService} implementations.
      *
      * @param meterServices the list of registered {@link MeterService} beans
@@ -188,6 +200,19 @@ public class Smf4jAutoConfiguration {
     @ConditionalOnMissingBean(TimerAspect.class)
     public TimerAspect timerAspect(MetricsService metricsService, BeanResolver beanResolver) {
         return new TimerAspect(metricsService, beanResolver);
+    }
+
+    /**
+     * Creates a {@link io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor} bean.
+     *
+     * @param metricsService the metrics service used to process gauge metrics
+     * @param beanResolver   the bean resolver for resolving Spring beans in SpEL expressions
+     * @return a new {@link io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor.class)
+    public io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor gaugeAnnotationProcessor(MetricsService metricsService, BeanResolver beanResolver) {
+        return new io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor(metricsService, beanResolver);
     }
 
     /**

@@ -61,4 +61,15 @@ public interface MetricsService {
      * @param context the SpEL evaluation context providing variables for dynamic tag resolution
      */
     void recordMetrics(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context);
+
+    /**
+     * Processes and records a gauge metric based on the metadata in {@link io.github.yubrajsahoo.smf4jcore.annotation.Gauge}.
+     *
+     * @param gauge the {@link io.github.yubrajsahoo.smf4jcore.annotation.Gauge} annotation
+     * @param instance the object to monitor
+     * @param function the value-producing function
+     * @param context the SpEL evaluation context
+     * @param <T> the type of the object monitored by this gauge
+     */
+    <T> void recordMetrics(io.github.yubrajsahoo.smf4jcore.annotation.Gauge gauge, T instance, java.util.function.ToDoubleFunction<T> function, StandardEvaluationContext context);
 }

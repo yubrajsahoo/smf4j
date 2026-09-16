@@ -18,58 +18,92 @@
 
 package io.github.yubrajsahoo.smf4jcore.service;
 
-import io.github.yubrajsahoo.smf4jcore.annotation.Counter;
-import io.github.yubrajsahoo.smf4jcore.annotation.Timer;
+import io.github.yubrajsahoo.smf4jcore.domain.Metrics;
+import io.github.yubrajsahoo.smf4jcore.enums.MetricsType;
+import io.github.yubrajsahoo.smf4jcore.factory.MeterFactory;
+import io.github.yubrajsahoo.smf4jcore.logger.MetricsLogger;
+import io.github.yubrajsahoo.smf4jcore.spel.SpelEvaluator;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service interface for processing metric annotations and dispatching recordings to meter services.
  *
  * @author Yubraj Sahoo
  * @version 0.0.1
- * @see io.github.yubrajsahoo.smf4jcore.service.impl.MetricsServiceImpl
  * @since 0.0.1
  */
-public interface MetricsService {
+public abstract class MetricsService {
+    /** Logger instance for this class. */
+    protected static final Logger log = LoggerFactory.getLogger(MetricsService.class);
+
+    /** The SpEL evaluator used to evaluate tag values. */
+    protected final SpelEvaluator spelEvaluator;
+    
+    /** The factory used to obtain meter services. */
+    protected final MeterFactory meterFactory;
+    
+    /** The logger used to log metrics events. */
+    protected final MetricsLogger metricsLogger;
 
     /**
-     * Starts a new {@link io.micrometer.core.instrument.Timer.Sample} to measure execution time.
-     * <p>
-     * This method is a convenience wrapper for initiating a timing sample which
-     * can later be stopped and recorded against a specific timer metric.
-     * </p>
+     * Constructs a new {@link MetricsService}.
      *
-     * @return a new {@link io.micrometer.core.instrument.Timer.Sample} instance
+     * @param spelEvaluator the SpEL evaluator
+     * @param meterFactory the meter factory
+     * @param metricsLogger the metrics logger
      */
-    io.micrometer.core.instrument.Timer.Sample start();
+    protected MetricsService(SpelEvaluator spelEvaluator, MeterFactory meterFactory, MetricsLogger metricsLogger) {
+        this.spelEvaluator = spelEvaluator;
+        this.meterFactory = meterFactory;
+        this.metricsLogger = metricsLogger;
+    }
 
     /**
-     * Processes and records a counter metric based on the metadata in {@link Counter}
-     * and the given SpEL {@link StandardEvaluationContext}.
+     * Records the given metrics using the appropriate meter service.
      *
-     * @param counter the {@link Counter} annotation containing metric definition and metadata
-     * @param context the SpEL evaluation context providing variables for dynamic tag resolution
+     * @param metricsType the type of the metrics
+     * @param metrics the metrics to record
      */
-    void recordMetrics(Counter counter, StandardEvaluationContext context);
+    protected void recordMetrics(MetricsType metricsType, Metrics metrics) {
+        metricsLogger.log(metrics);
+
+        if (!metrics.isEnabled()) {
+            return;
+        }
+
+        meterFactory.getMeterService(metricsType)
+                .ifPresentOrElse(
+                        meterService -> meterService.recordMetrics(metrics),
+                        () -> log.warn("No MeterService found for metrics type: {}", metricsType)
+                );
+    }
 
     /**
-     * Processes and records a timer metric based on the metadata in {@link Timer}
-     * and the given SpEL {@link StandardEvaluationContext}.
+     * Evaluates tag expressions defined in annotations against the given SpEL evaluation context.
      *
-     * @param sample the {@link io.micrometer.core.instrument.Timer.Sample} to capture letency
-     * @param timer   the {@link Timer} annotation containing metric definition and metadata
-     * @param context the SpEL evaluation context providing variables for dynamic tag resolution
-     */
-    void recordMetrics(io.micrometer.core.instrument.Timer.Sample sample, Timer timer, StandardEvaluationContext context);
-
-    /**
-     * Processes and records a gauge metric based on the metadata in {@link io.github.yubrajsahoo.smf4jcore.annotation.Gauge}.
-     *
-     * @param gauge the {@link io.github.yubrajsahoo.smf4jcore.annotation.Gauge} annotation
-     * @param instance the object to monitor
-     * @param function the value-producing function
+     * @param tags    the array of {@link io.github.yubrajsahoo.smf4jcore.annotation.Tags} to evaluate
      * @param context the SpEL evaluation context
-     * @param <T> the type of the object monitored by this gauge
+     * @return the evaluated Micrometer {@link Tags}
      */
-    <T> void recordMetrics(io.github.yubrajsahoo.smf4jcore.annotation.Gauge gauge, T instance, java.util.function.ToDoubleFunction<T> function, StandardEvaluationContext context);
+    protected Tags evaluateTags(io.github.yubrajsahoo.smf4jcore.annotation.Tags[] tags,
+                                StandardEvaluationContext context) {
+        if (tags == null || tags.length == 0) {
+            return Tags.empty();
+        }
+        List<Tag> tagList = new ArrayList<>(tags.length);
+        for (io.github.yubrajsahoo.smf4jcore.annotation.Tags tag : tags) {
+            if (tag != null) {
+                String value = spelEvaluator.evaluate(tag.value(), context);
+                tagList.add(Tag.of(tag.key(), value));
+            }
+        }
+        return Tags.of(tagList);
+    }
 }

@@ -58,6 +58,7 @@ public final class SpelContextBuilder {
      * @param joinPoint the AOP join point representing the method invocation; may be {@code null}
      * @param result    the return value of the intercepted method; may be {@code null}
      * @param error     the exception thrown by the intercepted method; may be {@code null}
+     * @param resolver  the bean resolver for resolving Spring beans in expressions; may be {@code null}
      * @return a fully populated {@link StandardEvaluationContext}
      */
     public static StandardEvaluationContext buildContext(JoinPoint joinPoint,

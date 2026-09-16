@@ -34,6 +34,12 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultMetricsLogger implements MetricsLogger {
 
+    /**
+     * Default constructor for DefaultMetricsLogger.
+     */
+    public DefaultMetricsLogger() {
+    }
+
     private static final Logger log = LoggerFactory.getLogger(DefaultMetricsLogger.class);
 
     /**

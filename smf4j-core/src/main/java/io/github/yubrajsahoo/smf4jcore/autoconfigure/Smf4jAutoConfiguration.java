@@ -25,7 +25,9 @@ import io.github.yubrajsahoo.smf4jcore.meter.service.MeterService;
 import io.github.yubrajsahoo.smf4jcore.meter.service.impl.TimerMeterService;
 import io.github.yubrajsahoo.smf4jcore.meter.service.impl.CounterMeterService;
 import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
-import io.github.yubrajsahoo.smf4jcore.service.impl.MetricsServiceImpl;
+import io.github.yubrajsahoo.smf4jcore.service.impl.CounterMetricsService;
+import io.github.yubrajsahoo.smf4jcore.service.impl.TimerMetricsService;
+import io.github.yubrajsahoo.smf4jcore.service.impl.GaugeMetricsService;
 import io.github.yubrajsahoo.smf4jcore.logger.MetricsLogger;
 import io.github.yubrajsahoo.smf4jcore.logger.impl.DefaultMetricsLogger;
 import io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder;
@@ -58,7 +60,7 @@ import java.util.List;
  *   <li>{@link TimerMeterService}</li>
  *   <li>{@link MeterFactory}</li>
  *   <li>{@link MetricsLogger}</li>
- *   <li>{@link MetricsService} (backed by {@link MetricsServiceImpl})</li>
+ *   <li>{@link MetricsService} (backed by specific metric type implementations)</li>
  *   <li>{@link SpelContextBuilder}</li>
  *   <li>{@link CounterAspect}</li>
  * </ul>
@@ -70,6 +72,12 @@ import java.util.List;
 @AutoConfiguration
 @EnableAspectJAutoProxy
 public class Smf4jAutoConfiguration {
+
+    /**
+     * Default constructor for Smf4jAutoConfiguration.
+     */
+    public Smf4jAutoConfiguration() {
+    }
 
     /**
      * Registers a fallback {@link SimpleMeterRegistry} if no {@link MeterRegistry} bean is currently present in the application context.
@@ -165,54 +173,84 @@ public class Smf4jAutoConfiguration {
     }
 
     /**
-     * Creates a {@link MetricsService} bean for evaluating metric tags and delegating recordings.
+     * Creates a {@link CounterMetricsService} bean for evaluating metric tags and delegating recordings.
      *
      * @param spelEvaluator the SpEL evaluator for resolving dynamic metric tag expressions
      * @param meterFactory  the meter factory for retrieving specific meter services
-     * @return a new {@link MetricsServiceImpl} instance
+     * @param metricsLogger the logger
+     * @return a new {@link CounterMetricsService} instance
      */
     @Bean
-    @ConditionalOnMissingBean(MetricsService.class)
-    public MetricsService metricsService(SpelEvaluator spelEvaluator, MeterFactory meterFactory, MetricsLogger metricsLogger) {
-        return new MetricsServiceImpl(spelEvaluator, meterFactory, metricsLogger);
+    @ConditionalOnMissingBean(CounterMetricsService.class)
+    public CounterMetricsService counterMetricsService(SpelEvaluator spelEvaluator, MeterFactory meterFactory, MetricsLogger metricsLogger) {
+        return new CounterMetricsService(spelEvaluator, meterFactory, metricsLogger);
+    }
+
+    /**
+     * Creates a {@link TimerMetricsService} bean for evaluating metric tags and delegating recordings.
+     *
+     * @param spelEvaluator the SpEL evaluator for resolving dynamic metric tag expressions
+     * @param meterFactory  the meter factory for retrieving specific meter services
+     * @param metricsLogger the logger
+     * @return a new {@link TimerMetricsService} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(TimerMetricsService.class)
+    public TimerMetricsService timerMetricsService(SpelEvaluator spelEvaluator, MeterFactory meterFactory, MetricsLogger metricsLogger) {
+        return new TimerMetricsService(spelEvaluator, meterFactory, metricsLogger);
+    }
+
+    /**
+     * Creates a {@link GaugeMetricsService} bean for evaluating metric tags and delegating recordings.
+     *
+     * @param spelEvaluator the SpEL evaluator for resolving dynamic metric tag expressions
+     * @param meterFactory  the meter factory for retrieving specific meter services
+     * @param metricsLogger the logger
+     * @return a new {@link GaugeMetricsService} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(GaugeMetricsService.class)
+    public GaugeMetricsService gaugeMetricsService(SpelEvaluator spelEvaluator, MeterFactory meterFactory, MetricsLogger metricsLogger) {
+        return new GaugeMetricsService(spelEvaluator, meterFactory, metricsLogger);
     }
 
     /**
      * Creates a {@link CounterAspect} bean to intercept methods annotated with {@link io.github.yubrajsahoo.smf4jcore.annotation.Counter}.
      *
-     * @param metricsService the metrics service used to process intercepted metric events
+     * @param counterMetricsService the metrics service used to process intercepted metric events
+     * @param beanResolver   the bean resolver for resolving Spring beans in SpEL expressions
      * @return a new {@link CounterAspect} instance
      */
     @Bean
     @ConditionalOnMissingBean(CounterAspect.class)
-    public CounterAspect counterAspect(MetricsService metricsService, BeanResolver beanResolver) {
-        return new CounterAspect(metricsService, beanResolver);
+    public CounterAspect counterAspect(CounterMetricsService counterMetricsService, BeanResolver beanResolver) {
+        return new CounterAspect(counterMetricsService, beanResolver);
     }
 
     /**
      * Creates a {@link TimerAspect} bean to intercept methods annotated with {@link io.github.yubrajsahoo.smf4jcore.annotation.Timer}.
      *
-     * @param metricsService the metrics service used to process intercepted metric events
+     * @param timerMetricsService the metrics service used to process intercepted metric events
      * @param beanResolver   the bean resolver for resolving Spring beans in SpEL expressions
      * @return a new {@link TimerAspect} instance
      */
     @Bean
     @ConditionalOnMissingBean(TimerAspect.class)
-    public TimerAspect timerAspect(MetricsService metricsService, BeanResolver beanResolver) {
-        return new TimerAspect(metricsService, beanResolver);
+    public TimerAspect timerAspect(TimerMetricsService timerMetricsService, BeanResolver beanResolver) {
+        return new TimerAspect(timerMetricsService, beanResolver);
     }
 
     /**
      * Creates a {@link io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor} bean.
      *
-     * @param metricsService the metrics service used to process gauge metrics
+     * @param gaugeMetricsService the metrics service used to process gauge metrics
      * @param beanResolver   the bean resolver for resolving Spring beans in SpEL expressions
      * @return a new {@link io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor} instance
      */
     @Bean
     @ConditionalOnMissingBean(io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor.class)
-    public io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor gaugeAnnotationProcessor(MetricsService metricsService, BeanResolver beanResolver) {
-        return new io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor(metricsService, beanResolver);
+    public io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor gaugeAnnotationProcessor(GaugeMetricsService gaugeMetricsService, BeanResolver beanResolver) {
+        return new io.github.yubrajsahoo.smf4jcore.processor.GaugeAnnotationProcessor(gaugeMetricsService, beanResolver);
     }
 
     /**

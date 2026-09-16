@@ -25,11 +25,19 @@ import io.github.yubrajsahoo.smf4jcore.meter.service.MeterService;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 
+/**
+ * Service for registering gauge metrics with a {@link MeterRegistry}.
+ */
 public class GaugeMeterService implements MeterService {
     private static final MetricsType METRICS_TYPE = MetricsType.GAUGE;
 
     private final MeterRegistry meterRegistry;
 
+    /**
+     * Constructs a new {@link GaugeMeterService}.
+     *
+     * @param meterRegistry the meter registry
+     */
     public GaugeMeterService(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
     }

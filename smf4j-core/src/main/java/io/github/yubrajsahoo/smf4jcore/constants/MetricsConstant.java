@@ -54,14 +54,22 @@ public final class MetricsConstant {
      *   <li>{@code #} – variable reference expressions</li>
      *   <li>{@code T} – type reference expressions</li>
      * </ul>
-     * </p>
      */
     public static final List<String> ALLOWED_SPEL_DESIGNS = List.of("@", "#", "T");
 
+    /**
+     * Variable name used in SpEL evaluation contexts to represent the AOP join point.
+     */
     public static final String JOIN_POINT = "joinPoint";
 
+    /**
+     * Variable name used in SpEL evaluation contexts to represent the method signature.
+     */
     public static final String METHOD_SIGNATURE = "methodSignature";
 
+    /**
+     * Variable name used in SpEL evaluation contexts to represent the method name.
+     */
     public static final String METHOD_NAME = "methodName";
 
     /**

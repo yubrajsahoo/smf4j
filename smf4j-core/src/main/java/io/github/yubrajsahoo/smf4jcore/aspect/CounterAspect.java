@@ -21,6 +21,7 @@ package io.github.yubrajsahoo.smf4jcore.aspect;
 
 import io.github.yubrajsahoo.smf4jcore.annotation.Counter;
 import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
+import io.github.yubrajsahoo.smf4jcore.service.impl.CounterMetricsService;
 import io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -51,15 +52,16 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 public class CounterAspect {
     private static final Logger log = LoggerFactory.getLogger(CounterAspect.class);
 
-    private final MetricsService metricsService;
+    private final CounterMetricsService metricsService;
     private final BeanResolver beanResolver;
 
     /**
-     * Constructs a new {@link CounterAspect} with the specified {@link MetricsService}.
+     * Constructs a new {@link CounterAspect} with the specified {@link CounterMetricsService}.
      *
      * @param metricsService the service responsible for processing and recording metrics
+     * @param beanResolver the bean resolver for resolving Spring beans
      */
-    public CounterAspect(MetricsService metricsService, BeanResolver beanResolver) {
+    public CounterAspect(CounterMetricsService metricsService, BeanResolver beanResolver) {
         this.metricsService = metricsService;
         this.beanResolver = beanResolver;
     }
@@ -68,7 +70,7 @@ public class CounterAspect {
      * Advice that executes upon successful return of a method annotated with {@link Counter}.
      * <p>
      * Creates a SpEL evaluation context populated with method parameters and the return value (as {@code #result}),
-     * then invokes {@link MetricsService#recordMetrics(Counter, StandardEvaluationContext)}.
+     * then invokes {@link CounterMetricsService#recordCounter(Counter, StandardEvaluationContext)}.
      * </p>
      *
      * @param joinPoint the AOP join point representing the method invocation
@@ -84,7 +86,7 @@ public class CounterAspect {
             StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
                     .buildContext(joinPoint, result, null, beanResolver);
 
-            metricsService.recordMetrics(counter, standardEvaluationContext);
+            metricsService.recordCounter(counter, standardEvaluationContext);
         } catch (Exception exception) {
             log.error("Error while capturing Counter Metrics from Return: {}", exception.getMessage(), exception);
         }
@@ -94,7 +96,7 @@ public class CounterAspect {
      * Advice that executes when a method annotated with {@link Counter} throws an exception.
      * <p>
      * Creates a SpEL evaluation context populated with method parameters and the thrown exception (as {@code #error}),
-     * then invokes {@link MetricsService#recordMetrics(Counter, StandardEvaluationContext)}.
+     * then invokes {@link CounterMetricsService#recordCounter(Counter, StandardEvaluationContext)}.
      * </p>
      *
      * @param joinPoint the AOP join point representing the method invocation
@@ -110,7 +112,7 @@ public class CounterAspect {
             StandardEvaluationContext standardEvaluationContext = SpelContextBuilder
                     .buildContext(joinPoint, null, throwable, beanResolver);
 
-            metricsService.recordMetrics(counter, standardEvaluationContext);
+            metricsService.recordCounter(counter, standardEvaluationContext);
         } catch (Exception exception) {
             log.error("Error while capturing Counter Metrics from Exception: {}", exception.getMessage(), exception);
         }

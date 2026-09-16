@@ -33,6 +33,12 @@ import io.micrometer.core.instrument.Timer;
  */
 public class TimerMetrics extends Metrics {
 
+    /**
+     * Default constructor.
+     */
+    public TimerMetrics() {
+    }
+
     private Timer.Sample sample;
 
     /**
@@ -56,8 +62,7 @@ public class TimerMetrics extends Metrics {
     /**
      * A fluent builder for creating and configuring {@link TimerMetrics} instances.
      *
-     * @author Yubraj Sahoo
-     * @since 0.0.1
+     * @return a new Builder instance
      */
     public static Builder builder() {
         return new Builder();

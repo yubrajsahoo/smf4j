@@ -20,6 +20,7 @@ package io.github.yubrajsahoo.smf4jcore.processor;
 
 import io.github.yubrajsahoo.smf4jcore.annotation.Gauge;
 import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
+import io.github.yubrajsahoo.smf4jcore.service.impl.GaugeMetricsService;
 import io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder;
 import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class GaugeAnnotationProcessor implements BeanPostProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(GaugeAnnotationProcessor.class);
 
-    private final MetricsService metricsService;
+    private final GaugeMetricsService metricsService;
     private final BeanResolver beanResolver;
     private final ExpressionParser parser = new SpelExpressionParser();
 
@@ -62,7 +63,7 @@ public class GaugeAnnotationProcessor implements BeanPostProcessor {
      * @param metricsService the service for registering metrics
      * @param beanResolver   the bean resolver for SpEL evaluation
      */
-    public GaugeAnnotationProcessor(MetricsService metricsService, BeanResolver beanResolver) {
+    public GaugeAnnotationProcessor(GaugeMetricsService metricsService, BeanResolver beanResolver) {
         this.metricsService = metricsService;
         this.beanResolver = beanResolver;
     }
@@ -146,7 +147,7 @@ public class GaugeAnnotationProcessor implements BeanPostProcessor {
     private void registerGauge(Gauge gauge, Object bean, ToDoubleFunction<Object> function) {
         try {
             StandardEvaluationContext context = SpelContextBuilder.buildContext(null, bean, null, beanResolver);
-            metricsService.recordMetrics(gauge, bean, function, context);
+            metricsService.recordGauge(gauge, bean, function, context);
         } catch (Exception e) {
             log.error("Error registering gauge '{}'", gauge.name(), e);
         }

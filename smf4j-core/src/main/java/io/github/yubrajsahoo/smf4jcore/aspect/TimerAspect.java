@@ -20,6 +20,7 @@ package io.github.yubrajsahoo.smf4jcore.aspect;
 
 import io.github.yubrajsahoo.smf4jcore.annotation.Timer;
 import io.github.yubrajsahoo.smf4jcore.service.MetricsService;
+import io.github.yubrajsahoo.smf4jcore.service.impl.TimerMetricsService;
 import io.github.yubrajsahoo.smf4jcore.spel.SpelContextBuilder;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -46,7 +47,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 public class TimerAspect {
     private static final Logger log = LoggerFactory.getLogger(TimerAspect.class);
 
-    private final MetricsService metricsService;
+    private final TimerMetricsService metricsService;
     private final BeanResolver beanResolver;
 
     /**
@@ -55,7 +56,7 @@ public class TimerAspect {
      * @param metricsService the service responsible for processing and recording metrics
      * @param beanResolver   the resolver used for evaluating Spring beans in SpEL expressions
      */
-    public TimerAspect(MetricsService metricsService, BeanResolver beanResolver) {
+    public TimerAspect(TimerMetricsService metricsService, BeanResolver beanResolver) {
         this.metricsService = metricsService;
         this.beanResolver = beanResolver;
     }
@@ -81,7 +82,7 @@ public class TimerAspect {
      * Executes the target method and records the execution duration.
      * <p>
      * A timing sample is started before execution. Once the method completes (normally or exceptionally),
-     * a SpEL context is built and the duration is recorded via the {@link MetricsService}.
+     * a SpEL context is built and the duration is recorded via the {@link TimerMetricsService}.
      * </p>
      *
      * @param joinPoint the join point representing the method execution
@@ -95,7 +96,7 @@ public class TimerAspect {
         io.micrometer.core.instrument.Timer.Sample sample = null;
         
         try {
-            sample = metricsService.start();
+            sample = metricsService.start(timer);
         } catch (Exception e) {
             log.error("Error starting Timer metric sample: {}", e.getMessage(), e);
         }
@@ -111,7 +112,7 @@ public class TimerAspect {
                 try {
                     StandardEvaluationContext context = SpelContextBuilder.buildContext(
                             joinPoint, result, error, beanResolver);
-                    metricsService.recordMetrics(sample, timer, context);
+                    metricsService.recordTimer(sample, timer, context);
                 } catch (Exception e) {
                     log.error("Error while recording Timer Metrics: {}", e.getMessage(), e);
                 }

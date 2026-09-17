@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Adjust the groupId based on your preference -->
+    <groupId>io.github.yubrajsahoo</groupId>
+    <artifactId>smf4j</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>smf4j</name>
+    <description>Parent POM for smf4j library</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Framework Versions -->
+        <spring-boot.version>3.5.16</spring-boot.version>
+
+        <!-- Security overrides / explicit versions -->
+        <logback.version>1.5.19</logback.version>
+        <jackson.version>2.21.4</jackson.version>
+
+        <!-- Test plugin versions -->
+        <jacoco.version>0.8.13</jacoco.version>
+        <sonar.maven.plugin.version>4.0.0.4121</sonar.maven.plugin.version>
+        <pitest.maven.version>1.25.9</pitest.maven.version>
+        <pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+
+        <!--    Sonar properties (resolved from .env locally, or -D flags in prod)    -->
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.organization>yubrajsahoo</sonar.organization>
+        <sonar.projectKey>yubrajsahoo_smf4j</sonar.projectKey>
+        <!--suppress UnresolvedMavenProperty -->
+        <sonar.token>${SONAR_TOKEN}</sonar.token>
+
+        <!-- Disable testCompileSourceRoots warning -->
+        <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
+    </properties>
+
+    <!-- Define modules here when you create them -->
+    <modules>
+        <module>smf4j-api</module>
+    </modules>
+
+    <!-- Global dependencies common to all modules (usually test deps or very common APIs) -->
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+    </dependencies>
+
+    <!-- Common dependency management -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Boot BOM -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- JaCoCo Plugin for Code Coverage -->
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

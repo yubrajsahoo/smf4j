@@ -1,11 +1,13 @@
 package io.github.yubrajsahoo.smf4j.api.domain;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TagTest {
     @Test
+    @DisplayName("Test Getters And Setters")
     void testGettersAndSetters() {
         Tag tag = new Tag();
         tag.setKey("k1");
@@ -16,6 +18,7 @@ class TagTest {
     }
 
     @Test
+    @DisplayName("Test Builder")
     void testBuilder() {
         Tag tag = Tag.builder()
                 .key("bk1")
@@ -26,3 +29,4 @@ class TagTest {
         assertThat(tag.getValue()).isEqualTo("bv1");
     }
 }
+

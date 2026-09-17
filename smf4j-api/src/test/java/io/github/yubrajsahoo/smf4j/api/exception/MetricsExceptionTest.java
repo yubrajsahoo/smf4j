@@ -1,12 +1,14 @@
 package io.github.yubrajsahoo.smf4j.api.exception;
 
 import io.github.yubrajsahoo.smf4j.api.constant.MetricsConstant;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MetricsExceptionTest {
     @Test
+    @DisplayName("Test Constructors")
     void testConstructors() {
         MetricsException e1 = new MetricsException("msg");
         assertThat(e1.getMessage()).isEqualTo("msg");
@@ -28,3 +30,4 @@ class MetricsExceptionTest {
         assertThat(e4.getMetrics()).isEqualTo("custom-metric2");
     }
 }
+

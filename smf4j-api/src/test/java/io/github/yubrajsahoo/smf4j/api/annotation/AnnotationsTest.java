@@ -1,5 +1,6 @@
 package io.github.yubrajsahoo.smf4j.api.annotation;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -27,6 +28,7 @@ class AnnotationsTest {
     }
 
     @Test
+    @DisplayName("Test Counter Annotation")
     void testCounterAnnotation() throws Exception {
         Method method = AnnotationsTest.class.getMethod("dummyMethodForCounter");
         Counter counter = method.getAnnotation(Counter.class);
@@ -40,6 +42,7 @@ class AnnotationsTest {
     }
 
     @Test
+    @DisplayName("Test Gauge Annotation")
     void testGaugeAnnotation() throws Exception {
         Method method = AnnotationsTest.class.getMethod("dummyMethodForGauge");
         Gauge gauge = method.getAnnotation(Gauge.class);
@@ -53,6 +56,7 @@ class AnnotationsTest {
     }
 
     @Test
+    @DisplayName("Test Timer Annotation")
     void testTimerAnnotation() throws Exception {
         Method method = AnnotationsTest.class.getMethod("dummyMethodForTimer");
         Timer timer = method.getAnnotation(Timer.class);
@@ -64,3 +68,4 @@ class AnnotationsTest {
         assertThat(timer.tags()[0].value()).isEqualTo("v3");
     }
 }
+

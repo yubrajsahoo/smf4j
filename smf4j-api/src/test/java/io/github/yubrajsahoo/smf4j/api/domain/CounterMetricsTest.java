@@ -1,5 +1,6 @@
 package io.github.yubrajsahoo.smf4j.api.domain;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CounterMetricsTest {
     @Test
+    @DisplayName("Test Getters And Setters")
     void testGettersAndSetters() {
         CounterMetrics metrics = new CounterMetrics();
         metrics.setIncrement(5L);
@@ -24,6 +26,7 @@ class CounterMetricsTest {
     }
 
     @Test
+    @DisplayName("Test Builder")
     void testBuilder() {
         CounterMetrics metrics = CounterMetrics.builder()
                 .increment(10L)
@@ -40,3 +43,4 @@ class CounterMetricsTest {
         assertThat(metrics.getTags()).isEmpty();
     }
 }
+

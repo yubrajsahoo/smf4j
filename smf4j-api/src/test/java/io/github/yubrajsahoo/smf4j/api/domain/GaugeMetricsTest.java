@@ -1,5 +1,6 @@
 package io.github.yubrajsahoo.smf4j.api.domain;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GaugeMetricsTest {
 
     @Test
+    @DisplayName("Test Getters And Setters")
     void testGettersAndSetters() {
         GaugeMetrics<String> metrics = new GaugeMetrics<>();
         ToDoubleFunction<String> func = String::length;
@@ -30,6 +32,7 @@ class GaugeMetricsTest {
     }
 
     @Test
+    @DisplayName("Test Builder")
     void testBuilder() {
         ToDoubleFunction<String> func = String::length;
         GaugeMetrics<String> metrics = GaugeMetrics.builder("bName", "test", func)
@@ -46,3 +49,4 @@ class GaugeMetricsTest {
         assertThat(metrics.getTags()).isEmpty();
     }
 }
+

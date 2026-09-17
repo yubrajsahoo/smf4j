@@ -1,5 +1,6 @@
 package io.github.yubrajsahoo.smf4j.api.domain;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TimerMetricsTest {
     @Test
+    @DisplayName("Test Getters And Setters")
     void testGettersAndSetters() {
         TimerMetrics metrics = new TimerMetrics();
         Object sample = new Object();
@@ -25,6 +27,7 @@ class TimerMetricsTest {
     }
 
     @Test
+    @DisplayName("Test Builder")
     void testBuilder() {
         Object sample = new Object();
         TimerMetrics metrics = TimerMetrics.builder()
@@ -42,3 +45,4 @@ class TimerMetricsTest {
         assertThat(metrics.getTags()).isEmpty();
     }
 }
+

@@ -1,0 +1,5 @@
+{
+  "name": "test.timer",
+  "description": "A test timer",
+  "enable": true
+}

@@ -1,0 +1,124 @@
+/*
+ * Copyright 2024 Yubraj Sahoo
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.github.yubrajsahoo.smf4j.core;
+
+import io.github.yubrajsahoo.smf4j.core.service.impl.CounterMeterService;
+import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
+import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
+import io.github.yubrajsahoo.smf4j.core.spel.SpelEvaluator;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+
+/**
+ * Auto-configuration class for the SMF4J core module.
+ * <p>
+ * This class is responsible for automatically configuring the necessary beans,
+ * aspects, and metric registries required for the Simple Metrics Facade for Java (SMF4J)
+ * when used in a Spring Boot environment.
+ * </p>
+ */
+@AutoConfiguration
+public class Smf4jCoreAutoConfiguration {
+
+    /**
+     * Registers a fallback {@link SimpleMeterRegistry} if no {@link MeterRegistry} bean is currently present in the application context.
+     *
+     * @return a default {@link SimpleMeterRegistry} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(MeterRegistry.class)
+    public MeterRegistry meterRegistry() {
+        return new SimpleMeterRegistry();
+    }
+
+    /**
+     * Creates and registers a {@link CounterMeterService} bean if one is not already present.
+     * <p>
+     * This service handles metrics of type COUNTER and registers them with the provided {@link MeterRegistry}.
+     * </p>
+     *
+     * @param meterRegistry the micrometer registry used for metrics collection
+     * @return a new {@link CounterMeterService} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(CounterMeterService.class)
+    public CounterMeterService counterMeterService(MeterRegistry meterRegistry) {
+        return new CounterMeterService(meterRegistry);
+    }
+
+    /**
+     * Creates and registers a {@link GaugeMeterService} bean if one is not already present.
+     * <p>
+     * This service handles metrics of type GAUGE and registers them with the provided {@link MeterRegistry}.
+     * </p>
+     *
+     * @param meterRegistry the micrometer registry used for metrics collection
+     * @return a new {@link GaugeMeterService} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(GaugeMeterService.class)
+    public GaugeMeterService gaugeMeterService(MeterRegistry meterRegistry) {
+        return new GaugeMeterService(meterRegistry);
+    }
+
+    /**
+     * Creates and registers a {@link TimerMeterService} bean if one is not already present.
+     * <p>
+     * This service handles metrics of type TIMER and registers them with the provided {@link MeterRegistry}.
+     * </p>
+     *
+     * @param meterRegistry the micrometer registry used for metrics collection
+     * @return a new {@link TimerMeterService} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(TimerMeterService.class)
+    public TimerMeterService timerMeterService(MeterRegistry meterRegistry) {
+        return new TimerMeterService(meterRegistry);
+    }
+
+    /**
+     * Creates and registers an {@link ExpressionParser} bean if one is not already present.
+     * <p>
+     * Provides a standard SpEL expression parser used for evaluating dynamic metric tags.
+     * </p>
+     *
+     * @return a new {@link SpelExpressionParser} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(ExpressionParser.class)
+    public ExpressionParser expressionParser() {
+        return new SpelExpressionParser();
+    }
+
+    /**
+     * Creates and registers a {@link SpelEvaluator} bean if one is not already present.
+     * <p>
+     * Provides a thread-safe Spring Expression Language (SpEL) evaluator that caches parsed expressions
+     * for high performance.
+     * </p>
+     *
+     * @param expressionParser the parser used to compile SpEL expressions
+     * @return a new {@link SpelEvaluator} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(SpelEvaluator.class)
+    public SpelEvaluator spelEvaluator(ExpressionParser expressionParser) {
+        return new SpelEvaluator(expressionParser);
+    }
+}

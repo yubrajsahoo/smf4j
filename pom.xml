@@ -48,6 +48,7 @@
     <!-- Define modules here when you create them -->
     <modules>
         <module>smf4j-api</module>
+        <module>smf4j-core</module>
     </modules>
 
     <!-- Global dependencies common to all modules (usually test deps or very common APIs) -->

@@ -10,16 +10,19 @@ class AnnotationsTest {
 
     @Counter(name = "cName", description = "cDesc", increment = 2, tags = {@Tags(key = "k1", value = "v1")}, enable = false)
     public void dummyMethodForCounter() {
+        //dummy method
         return;
     }
 
     @Gauge(name = "gName", description = "gDesc", expression = "10.0", tags = {@Tags(key = "k2", value = "v2")}, enable = false)
     public void dummyMethodForGauge() {
+        //dummy method
         return;
     }
 
     @Timer(name = "tName", description = "tDesc", tags = {@Tags(key = "k3", value = "v3")}, enable = false)
     public void dummyMethodForTimer() {
+        //dummy method
         return;
     }
 

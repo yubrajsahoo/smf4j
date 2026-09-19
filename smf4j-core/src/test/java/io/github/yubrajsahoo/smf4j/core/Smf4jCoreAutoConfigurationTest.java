@@ -16,7 +16,6 @@ package io.github.yubrajsahoo.smf4j.core;
 import io.github.yubrajsahoo.smf4j.core.service.impl.CounterMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
-import io.github.yubrajsahoo.smf4j.core.spel.SpelEvaluator;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +41,6 @@ class Smf4jCoreAutoConfigurationTest {
             assertThat(context).hasSingleBean(CounterMeterService.class);
             assertThat(context).hasSingleBean(GaugeMeterService.class);
             assertThat(context).hasSingleBean(TimerMeterService.class);
-            assertThat(context).hasSingleBean(SpelEvaluator.class);
             assertThat(context).hasSingleBean(org.springframework.expression.ExpressionParser.class);
 
             // Verify meter registry is the SimpleMeterRegistry fallback
@@ -61,34 +59,6 @@ class Smf4jCoreAutoConfigurationTest {
                 });
     }
 
-    @Test
-    @DisplayName("Should back off when custom services are provided")
-    void shouldBackOffWhenCustomServicesProvided() {
-        contextRunner
-                .withUserConfiguration(CustomServicesConfig.class)
-                .run(context -> {
-                    assertThat(context).hasSingleBean(CounterMeterService.class);
-                    assertThat(context).hasSingleBean(SpelEvaluator.class);
-                    assertThat(context).hasSingleBean(GaugeMeterService.class);
-                    assertThat(context).hasSingleBean(TimerMeterService.class);
-
-                    // Check that the custom subclasses were loaded instead of the auto-configured ones
-                    assertThat(context.getBean(CounterMeterService.class)).isExactlyInstanceOf(CustomCounterMeterService.class);
-                    assertThat(context.getBean(SpelEvaluator.class)).isExactlyInstanceOf(CustomSpelEvaluator.class);
-                });
-    }
-
-    @Test
-    @DisplayName("Should back off when custom ExpressionParser is provided")
-    void shouldBackOffWhenCustomExpressionParserProvided() {
-        contextRunner
-                .withUserConfiguration(CustomExpressionParserConfig.class)
-                .run(context -> {
-                    assertThat(context).hasSingleBean(org.springframework.expression.ExpressionParser.class);
-                    assertThat(context.getBean(org.springframework.expression.ExpressionParser.class)).isExactlyInstanceOf(CustomExpressionParser.class);
-                });
-    }
-
     // -- Dummy classes for testing @ConditionalOnMissingBean --
 
     static class CustomMeterRegistry extends SimpleMeterRegistry {
@@ -100,11 +70,6 @@ class Smf4jCoreAutoConfigurationTest {
         }
     }
 
-    static class CustomSpelEvaluator extends SpelEvaluator {
-        public CustomSpelEvaluator() {
-            super(new SpelExpressionParser());
-        }
-    }
 
     static class CustomExpressionParser extends SpelExpressionParser {
     }
@@ -114,27 +79,6 @@ class Smf4jCoreAutoConfigurationTest {
         @Bean
         public MeterRegistry meterRegistry() {
             return new CustomMeterRegistry();
-        }
-    }
-
-    @Configuration
-    static class CustomServicesConfig {
-        @Bean
-        public CounterMeterService counterMeterService(MeterRegistry meterRegistry) {
-            return new CustomCounterMeterService(meterRegistry);
-        }
-
-        @Bean
-        public SpelEvaluator spelEvaluator() {
-            return new CustomSpelEvaluator();
-        }
-    }
-
-    @Configuration
-    static class CustomExpressionParserConfig {
-        @Bean
-        public org.springframework.expression.ExpressionParser expressionParser() {
-            return new CustomExpressionParser();
         }
     }
 }

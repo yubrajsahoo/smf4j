@@ -16,14 +16,11 @@ package io.github.yubrajsahoo.smf4j.core;
 import io.github.yubrajsahoo.smf4j.core.service.impl.CounterMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
-import io.github.yubrajsahoo.smf4j.core.spel.SpelEvaluator;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * Auto-configuration class for the SMF4J core module.
@@ -90,35 +87,5 @@ public class Smf4jCoreAutoConfiguration {
     @ConditionalOnMissingBean(TimerMeterService.class)
     public TimerMeterService timerMeterService(MeterRegistry meterRegistry) {
         return new TimerMeterService(meterRegistry);
-    }
-
-    /**
-     * Creates and registers an {@link ExpressionParser} bean if one is not already present.
-     * <p>
-     * Provides a standard SpEL expression parser used for evaluating dynamic metric tags.
-     * </p>
-     *
-     * @return a new {@link SpelExpressionParser} instance
-     */
-    @Bean
-    @ConditionalOnMissingBean(ExpressionParser.class)
-    public ExpressionParser expressionParser() {
-        return new SpelExpressionParser();
-    }
-
-    /**
-     * Creates and registers a {@link SpelEvaluator} bean if one is not already present.
-     * <p>
-     * Provides a thread-safe Spring Expression Language (SpEL) evaluator that caches parsed expressions
-     * for high performance.
-     * </p>
-     *
-     * @param expressionParser the parser used to compile SpEL expressions
-     * @return a new {@link SpelEvaluator} instance
-     */
-    @Bean
-    @ConditionalOnMissingBean(SpelEvaluator.class)
-    public SpelEvaluator spelEvaluator(ExpressionParser expressionParser) {
-        return new SpelEvaluator(expressionParser);
     }
 }

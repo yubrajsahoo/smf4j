@@ -41,7 +41,7 @@ class Smf4jCoreAutoConfigurationTest {
             assertThat(context).hasSingleBean(CounterMeterService.class);
             assertThat(context).hasSingleBean(GaugeMeterService.class);
             assertThat(context).hasSingleBean(TimerMeterService.class);
-            assertThat(context).hasSingleBean(org.springframework.expression.ExpressionParser.class);
+            assertThat(context).hasSingleBean(io.github.yubrajsahoo.smf4j.core.factory.MeterFactory.class);
 
             // Verify meter registry is the SimpleMeterRegistry fallback
             assertThat(context.getBean(MeterRegistry.class)).isInstanceOf(SimpleMeterRegistry.class);

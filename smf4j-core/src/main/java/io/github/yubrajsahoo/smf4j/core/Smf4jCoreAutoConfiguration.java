@@ -13,6 +13,8 @@
 
 package io.github.yubrajsahoo.smf4j.core;
 
+import io.github.yubrajsahoo.smf4j.core.factory.MeterFactory;
+import io.github.yubrajsahoo.smf4j.core.service.MeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.CounterMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
@@ -21,6 +23,8 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+
+import java.util.List;
 
 /**
  * Auto-configuration class for the SMF4J core module.
@@ -42,6 +46,21 @@ public class Smf4jCoreAutoConfiguration {
     @ConditionalOnMissingBean(MeterRegistry.class)
     public MeterRegistry meterRegistry() {
         return new SimpleMeterRegistry();
+    }
+
+    /**
+     * Creates and registers a {@link MeterFactory} bean.
+     * <p>
+     * The factory manages the provided list of {@link MeterService} instances,
+     * allowing for retrieval of the appropriate service based on metrics type.
+     * </p>
+     *
+     * @param meterServices a list of available {@link MeterService} instances injected by Spring
+     * @return a new {@link MeterFactory} instance
+     */
+    @Bean
+    public MeterFactory meterFactory(List<MeterService> meterServices) {
+        return new MeterFactory(meterServices);
     }
 
     /**

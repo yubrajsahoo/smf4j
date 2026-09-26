@@ -51,6 +51,9 @@ class GaugeAnnotationProcessorTest {
     @Autowired
     private TestMapBean testMapBean;
 
+    @Autowired
+    private TestProxiedBean testProxiedBean;
+
     @Test
     @DisplayName("Should process @Gauge annotation on method without SpEL")
     void testMethodAnnotationWithoutSpEL() {
@@ -99,6 +102,16 @@ class GaugeAnnotationProcessorTest {
         assertEquals(2.0, listSizeGauge.value());
     }
 
+    @Test
+    @DisplayName("Should process @Gauge annotation on proxied bean")
+    void testProxiedBeanAnnotation() {
+        testProxiedBean.setCount(15);
+
+        io.micrometer.core.instrument.Gauge gauge = meterRegistry.find("test.proxied.gauge").gauge();
+        assertNotNull(gauge, "Gauge should be registered for proxied bean");
+        assertEquals(15.0, gauge.value());
+    }
+
     @Configuration
     static class TestConfig {
         @Bean
@@ -114,6 +127,14 @@ class GaugeAnnotationProcessorTest {
         @Bean
         public TestMapBean testMapBean() {
             return new TestMapBean();
+        }
+
+        @Bean
+        public TestProxiedBean testProxiedBean() {
+            TestProxiedBean target = new TestProxiedBean();
+            org.springframework.aop.framework.ProxyFactory factory = new org.springframework.aop.framework.ProxyFactory(target);
+            factory.setProxyTargetClass(true); // force CGLIB proxy
+            return (TestProxiedBean) factory.getProxy();
         }
     }
 
@@ -156,6 +177,15 @@ class GaugeAnnotationProcessorTest {
         public void setDataMap(java.util.Map<String, List<String>> dataMap) {
             this.dataMap = dataMap;
             this.dataMapForList = dataMap;
+        }
+    }
+
+    static class TestProxiedBean {
+        @Gauge(name = "test.proxied.gauge")
+        private int count;
+
+        public void setCount(int count) {
+            this.count = count;
         }
     }
 }

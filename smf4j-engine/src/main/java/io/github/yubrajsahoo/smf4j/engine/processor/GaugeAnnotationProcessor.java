@@ -70,9 +70,26 @@ public class GaugeAnnotationProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(Object bean, @Nonnull String beanName) throws BeansException {
-        Class<?> targetClass = bean.getClass();
+        Object target = getTargetObject(bean);
+        Class<?> targetClass = target.getClass();
 
-        // Process fields
+        processFields(targetClass, target, beanName);
+        processMethods(targetClass, target, beanName);
+
+        return bean;
+    }
+
+    private Object getTargetObject(Object bean) {
+        if (org.springframework.aop.support.AopUtils.isAopProxy(bean)) {
+            Object singletonTarget = org.springframework.aop.framework.AopProxyUtils.getSingletonTarget(bean);
+            if (singletonTarget != null) {
+                return singletonTarget;
+            }
+        }
+        return bean;
+    }
+
+    private void processFields(Class<?> targetClass, Object target, String beanName) {
         ReflectionUtils.doWithFields(targetClass, field -> {
             Gauge gauge = field.getAnnotation(Gauge.class);
             if (gauge != null) {
@@ -88,11 +105,12 @@ public class GaugeAnnotationProcessor implements BeanPostProcessor {
                         return 0.0;
                     }
                 };
-                registerGauge(gauge, bean, function);
+                registerGauge(gauge, target, function);
             }
         });
+    }
 
-        // Process methods
+    private void processMethods(Class<?> targetClass, Object target, String beanName) {
         ReflectionUtils.doWithMethods(targetClass, method -> {
             Gauge gauge = method.getAnnotation(Gauge.class);
             if (gauge != null) {
@@ -112,11 +130,9 @@ public class GaugeAnnotationProcessor implements BeanPostProcessor {
                         return 0.0;
                     }
                 };
-                registerGauge(gauge, bean, function);
+                registerGauge(gauge, target, function);
             }
         });
-
-        return bean;
     }
 
     private Expression parseExpression(String expressionStr) {

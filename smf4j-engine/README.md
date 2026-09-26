@@ -1,0 +1,32 @@
+# smf4j-engine
+
+The `smf4j-engine` module is responsible for the runtime processing of SMF4J annotations. It uses Spring AOP to intercept method calls and Spring Expression Language (SpEL) to evaluate dynamic tags.
+
+## Features
+
+* **Aspect-Oriented Programming (AOP):** Intercepts methods annotated with `@Counter`, `@Timer`, etc., to collect metrics without cluttering business logic (`CounterAspect`, `TimerAspect`).
+* **SpEL Evaluation:** Evaluates SpEL expressions in `@Tags` to dynamically resolve values from method arguments (`#argName`), return values (`#result`), or thrown exceptions (`#error`).
+* **Gauge Processing:** Processes `@Gauge` annotations during application startup (`GaugeAnnotationProcessor`).
+* **Auto-Configuration:** Configures the AOP aspects automatically through `Smf4jEngineAutoConfiguration`.
+
+## Installation
+
+For most users, this is the primary dependency to include, as it transitively brings in `api` and `core`:
+
+```xml
+<dependency>
+    <groupId>io.github.yubrajsahoo</groupId>
+    <artifactId>smf4j-engine</artifactId>
+    <version>${smf4j.version}</version>
+</dependency>
+```
+
+## Proper Use Cases
+
+Use this module when your application is a Spring Boot application and you wish to use a completely declarative (annotation-based) approach to metric tracking. The AOP aspects provided in this module will handle all boilerplate method interception and tag resolution automatically.
+
+## Build Commands
+Run from the root of the project to build this module:
+```bash
+./mvnw clean install -pl smf4j-engine
+```

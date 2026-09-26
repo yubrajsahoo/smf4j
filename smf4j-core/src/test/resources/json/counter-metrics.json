@@ -1,0 +1,10 @@
+{
+  "name": "test.counter",
+  "description": "A test counter",
+  "enable": true,
+  "increment": 5,
+  "tags": [
+    { "key": "env", "value": "test" },
+    { "key": "region", "value": "us-east" }
+  ]
+}

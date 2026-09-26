@@ -1,1 +1,82 @@
-# smf4j
+# SMF4J - Simple Metrics Facade for Java
+
+SMF4J (Simple Metrics Facade for Java) is a lightweight library designed to simplify the collection and publishing of metrics in Java applications, particularly those using Spring Boot and Micrometer. It provides easy-to-use annotations like `@Counter`, `@Timer`, and `@Gauge` with support for dynamic tag evaluation using Spring Expression Language (SpEL).
+
+## Modules
+
+The project is structured into three main modules:
+
+* **[smf4j-api](smf4j-api/README.md):** Contains the core annotations (`@Counter`, `@Timer`, `@Gauge`, `@Tags`) and domain models.
+* **[smf4j-core](smf4j-core/README.md):** Provides the core metric services and integration with Micrometer.
+* **[smf4j-engine](smf4j-engine/README.md):** Contains Spring AOP aspects and the SpEL evaluation engine to process annotations at runtime.
+
+## Key Features
+
+* **Annotation-Driven:** Collect metrics effortlessly by annotating your methods with `@Counter`, `@Timer`, `@Gauge`.
+* **Dynamic Tags with SpEL:** Use Spring Expression Language to dynamically resolve tag values from method arguments, return values, or exceptions (e.g., `#result.status`, `#request.id`).
+* **Micrometer Integration:** Seamlessly integrates with Micrometer to publish metrics to various monitoring systems (Prometheus, Datadog, etc.).
+* **Spring Boot Auto-Configuration:** Easy setup in Spring Boot applications. The beans and aspects auto-configure just by adding the dependency.
+
+## Installation
+
+Add the following dependency to your `pom.xml`. (Make sure to replace `${smf4j.version}` with the latest version):
+
+```xml
+<dependency>
+    <groupId>io.github.yubrajsahoo</groupId>
+    <artifactId>smf4j-engine</artifactId>
+    <version>${smf4j.version}</version>
+</dependency>
+```
+*Note: Adding `smf4j-engine` transitively pulls in `smf4j-core` and `smf4j-api`.*
+
+## Proper Use Cases
+
+1. **Tracking API Request Counts and Statuses**
+   You can easily track how many times an endpoint is called and bucket them by the returned status.
+   ```java
+   @Counter(
+       name = "api.requests.total",
+       description = "Total number of API requests",
+       tags = { @Tags(key = "status", value = "#result.status") }
+   )
+   public ApiResponse processRequest(ApiRequest request) { ... }
+   ```
+
+2. **Measuring Execution Time (Timers)**
+   Keep track of how long critical business methods or external API calls take to execute.
+   ```java
+   @Timer(
+       name = "db.query.execution.time",
+       description = "Time taken to execute database queries",
+       tags = { @Tags(key = "queryType", value = "#query.type") }
+   )
+   public QueryResult executeQuery(Query query) { ... }
+   ```
+
+3. **Monitoring System States (Gauges)**
+   Track the size of a cache or the number of active users currently logged in.
+   ```java
+   @Gauge(
+       name = "cache.active.sessions",
+       description = "Number of active user sessions in the cache"
+   )
+   public int getActiveSessions() { ... }
+   ```
+
+## Building the Library
+
+To build the library locally, run the following Maven wrapper command from the root directory:
+
+```bash
+# Clean, compile, and install the library into your local Maven repository
+./mvnw clean install
+```
+
+To run the test suite and verify code coverage:
+```bash
+./mvnw clean test
+```
+
+## License
+This project is licensed under the Apache License, Version 2.0.

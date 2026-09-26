@@ -1,0 +1,6 @@
+{
+  "name": "test.gauge",
+  "description": "A test gauge",
+  "enable": true,
+  "tags": []
+}

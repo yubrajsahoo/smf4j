@@ -25,7 +25,6 @@ import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.GaugeMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Tag;
 import io.github.yubrajsahoo.smf4j.api.enums.MetricsType;
-import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
 import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
 import io.github.yubrajsahoo.smf4j.engine.Smf4jEngineTestAutoConfiguration;
 import io.micrometer.core.instrument.Gauge;
@@ -69,7 +68,7 @@ class GaugeMetricsServiceTest {
     @BeforeEach
     void setUp() {
         meterRegistry.clear();
-        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
         listAppender = new ListAppender<>();
         listAppender.start();
         logger.addAppender(listAppender);
@@ -77,7 +76,7 @@ class GaugeMetricsServiceTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }

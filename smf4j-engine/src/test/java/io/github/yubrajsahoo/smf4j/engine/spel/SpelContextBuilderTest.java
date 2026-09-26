@@ -75,6 +75,17 @@ class SpelContextBuilderTest {
 
         assertEquals(123L, context.lookupVariable("userId"));
         assertEquals(true, context.lookupVariable("isActive"));
+        
+        Object[] resolvedArgs = (Object[]) context.lookupVariable("args");
+        assertNotNull(resolvedArgs);
+        assertEquals(123L, resolvedArgs[0]);
+        assertEquals(true, resolvedArgs[1]);
+        
+        assertEquals(123L, context.lookupVariable("a0"));
+        assertEquals(true, context.lookupVariable("a1"));
+        assertEquals(123L, context.lookupVariable("p0"));
+        assertEquals(true, context.lookupVariable("p1"));
+
         assertEquals("Success", context.lookupVariable(MetricsConstant.RESULT));
         assertSame(error, context.lookupVariable(MetricsConstant.ERROR));
         assertSame(rootCause, context.lookupVariable(MetricsConstant.ROOT_ERROR));
@@ -170,6 +181,41 @@ class SpelContextBuilderTest {
         assertNull(context.lookupVariable(MetricsConstant.JOIN_POINT));
         assertNull(context.lookupVariable(MetricsConstant.METHOD_SIGNATURE));
         assertNull(context.lookupVariable(MetricsConstant.METHOD_NAME));
+    }
+
+    @Test
+    @DisplayName("Verify actual SpEL evaluation works for #args[0], #a0, and #parameterName")
+    void testSpelEvaluationForArguments() {
+        // Arrange
+        String[] paramNames = {"userId", "isActive"};
+        Object[] args = {456L, false};
+        
+        when(methodSignature.getParameterNames()).thenReturn(paramNames);
+        when(methodSignature.getName()).thenReturn("updateUser");
+        when(joinPoint.getArgs()).thenReturn(args);
+        
+        StandardEvaluationContext context = SpelContextBuilder.buildContext(
+                joinPoint, null, null, null
+        );
+        
+        org.springframework.expression.ExpressionParser parser = new org.springframework.expression.spel.standard.SpelExpressionParser();
+        
+        // Act & Assert
+        // Test args array access
+        assertEquals(456L, parser.parseExpression("#args[0]").getValue(context));
+        assertEquals(false, parser.parseExpression("#args[1]").getValue(context));
+        
+        // Test short parameter index access
+        assertEquals(456L, parser.parseExpression("#a0").getValue(context));
+        assertEquals(false, parser.parseExpression("#a1").getValue(context));
+        assertEquals(456L, parser.parseExpression("#p0").getValue(context));
+        
+        // Test named parameter access
+        assertEquals(456L, parser.parseExpression("#userId").getValue(context));
+        assertEquals(false, parser.parseExpression("#isActive").getValue(context));
+        
+        // Test method name access
+        assertEquals("updateUser", parser.parseExpression("#methodName").getValue(context));
     }
 
     @Test

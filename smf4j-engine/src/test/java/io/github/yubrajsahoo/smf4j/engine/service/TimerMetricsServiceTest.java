@@ -25,7 +25,6 @@ import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4j.api.enums.MetricsType;
-import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
 import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
 import io.github.yubrajsahoo.smf4j.engine.Smf4jEngineTestAutoConfiguration;
 import io.github.yubrajsahoo.smf4j.engine.service.impl.TimerMetricsService;
@@ -64,7 +63,7 @@ class TimerMetricsServiceTest {
     @BeforeEach
     void setUp() {
         meterRegistry.clear();
-        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
         listAppender = new ListAppender<>();
         listAppender.start();
         logger.addAppender(listAppender);
@@ -72,7 +71,7 @@ class TimerMetricsServiceTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }

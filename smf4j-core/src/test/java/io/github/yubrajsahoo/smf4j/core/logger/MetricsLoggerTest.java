@@ -5,6 +5,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
+import io.github.yubrajsahoo.smf4j.api.domain.Metrics;
 import io.github.yubrajsahoo.smf4j.core.Smf4jCoreAutoConfiguration;
 import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
 import org.junit.jupiter.api.AfterEach;
@@ -27,7 +28,8 @@ class MetricsLoggerTest {
 
     @BeforeEach
     void setUp() {
-        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(MetricsLogger.class);
+        logger.setLevel(ch.qos.logback.classic.Level.ALL);
 
         listAppender = new ListAppender<>();
         listAppender.start();
@@ -37,7 +39,7 @@ class MetricsLoggerTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(MetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }
@@ -51,11 +53,11 @@ class MetricsLoggerTest {
 
         metricsLogger.log(metrics);
 
-        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
-
+        ILoggingEvent event = listAppender.list.get(0);
+        assertEquals(ch.qos.logback.classic.Level.INFO, event.getLevel());
         String expectedMessage = "Metrics Logs For With->name=test.counter->" +
                 "env=test->region=us-east->description=A test counter->increment=5";
-        assertEquals(expectedMessage, formattedMessage);
+        assertEquals(expectedMessage, event.getFormattedMessage());
     }
 
     @Test
@@ -68,10 +70,92 @@ class MetricsLoggerTest {
 
         metricsLogger.log(metrics);
 
-        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
-
+        ILoggingEvent event = listAppender.list.get(0);
+        assertEquals(ch.qos.logback.classic.Level.INFO, event.getLevel());
         String expectedMessage = "Metrics Disabled For->name=test.counter->" +
                 "env=test->region=us-east->description=A test counter->increment=5";
-        assertEquals(expectedMessage, formattedMessage);
+        assertEquals(expectedMessage, event.getFormattedMessage());
+    }
+
+    @Test
+    @DisplayName("Test case for log with DEBUG level")
+    void testLog_debug() {
+        CounterMetrics metrics = JsonConverter.fromJsonFile(
+                "/json/counter-metrics.json", CounterMetrics.class
+        );
+
+        MetricsLogger customLogger = new DefaultMetricsLogger("DEBUG");
+        customLogger.log(metrics);
+
+        ILoggingEvent event = listAppender.list.get(0);
+        assertEquals(ch.qos.logback.classic.Level.DEBUG, event.getLevel());
+    }
+
+    @Test
+    @DisplayName("Test case for log with WARN level")
+    void testLog_warn() {
+        CounterMetrics metrics = JsonConverter.fromJsonFile(
+                "/json/counter-metrics.json", CounterMetrics.class
+        );
+
+        MetricsLogger customLogger = new DefaultMetricsLogger("WARN");
+        customLogger.log(metrics);
+
+        ILoggingEvent event = listAppender.list.get(0);
+        assertEquals(ch.qos.logback.classic.Level.WARN, event.getLevel());
+    }
+
+    @Test
+    @DisplayName("Test case for log with ERROR level")
+    void testLog_error() {
+        CounterMetrics metrics = JsonConverter.fromJsonFile(
+                "/json/counter-metrics.json", CounterMetrics.class
+        );
+
+        MetricsLogger customLogger = new DefaultMetricsLogger("ERROR");
+        customLogger.log(metrics);
+
+        ILoggingEvent event = listAppender.list.get(0);
+        assertEquals(ch.qos.logback.classic.Level.ERROR, event.getLevel());
+    }
+
+    @Test
+    @DisplayName("Test case for prepareLog")
+    void testPrepareLog() {
+        CounterMetrics metrics = JsonConverter.fromJsonFile(
+                "/json/counter-metrics.json", CounterMetrics.class
+        );
+
+        MetricsLogger abstractLogger = new MetricsLogger() {
+            @Override
+            public void log(Metrics m) {
+                // Not used
+            }
+        };
+
+        String logOutput = abstractLogger.prepareLog("Prefix->", metrics);
+
+        String expectedLogOutput = "Prefix->name=test.counter->env=test->region=us-east->description=A test counter";
+        assertEquals(expectedLogOutput, logOutput);
+    }
+
+    @Test
+    @DisplayName("Test case for prepareTagsLog")
+    void testPrepareTagsLog() {
+        CounterMetrics metrics = JsonConverter.fromJsonFile(
+                "/json/counter-metrics.json", CounterMetrics.class
+        );
+
+        MetricsLogger abstractLogger = new MetricsLogger() {
+            @Override
+            public void log(Metrics m) {
+                // Not used
+            }
+        };
+
+        String tagsOutput = abstractLogger.prepareTagsLog(metrics);
+
+        String expectedTagsOutput = "->env=test->region=us-east";
+        assertEquals(expectedTagsOutput, tagsOutput);
     }
 }

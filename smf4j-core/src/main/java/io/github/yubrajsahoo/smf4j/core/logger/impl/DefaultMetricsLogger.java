@@ -22,8 +22,6 @@ import io.github.yubrajsahoo.smf4j.api.constant.MetricsConstant;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Metrics;
 import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation of {@link MetricsLogger} for formatting and logging metric recording events at info level.
@@ -32,33 +30,15 @@ import org.slf4j.LoggerFactory;
  * @version 0.0.1
  * @since 0.0.1
  */
-public class DefaultMetricsLogger implements MetricsLogger {
+public class DefaultMetricsLogger extends MetricsLogger {
+    private final String logLevel;
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultMetricsLogger.class);
+    public DefaultMetricsLogger() {
+        this.logLevel = "INFO";
+    }
 
-    /**
-     * Prepares a formatted log message string containing common metric attributes (name, tags, description).
-     *
-     * @param message the prefix message
-     * @param metrics the metric whose attributes are being formatted
-     * @return the formatted log message string
-     */
-    protected String prepareLog(String message, Metrics metrics) {
-        StringBuilder logBuilder = new StringBuilder(message);
-        logBuilder.append("name=")
-                .append(metrics.getName());
-
-        metrics.getTags().forEach(tag -> logBuilder.append("->")
-                .append(tag.getKey())
-                .append("=")
-                .append(tag.getValue()));
-
-        logBuilder
-                .append("->")
-                .append("description=")
-                .append(metrics.getDescription());
-
-        return logBuilder.toString();
+    public DefaultMetricsLogger(String logLevel) {
+        this.logLevel = logLevel != null ? logLevel.toUpperCase() : "INFO";
     }
 
     /**
@@ -66,7 +46,7 @@ public class DefaultMetricsLogger implements MetricsLogger {
      * <p>
      * Formats the metric data using {@link #prepareLog(String, Metrics)}.
      * If the metric is an instance of {@link CounterMetrics}, it appends the increment value to the log message.
-     * The final message is logged at the info level.
+     * The final message is logged at the configured level.
      * </p>
      *
      * @param metrics the metric data to log
@@ -83,6 +63,6 @@ public class DefaultMetricsLogger implements MetricsLogger {
             logMessage += "->" + "increment=" + counterMetrics.getIncrement();
         }
 
-        log.info(logMessage);
+        logMessage(logLevel, logMessage);
     }
 }

@@ -46,8 +46,8 @@ class TagsMapperTest {
     @DisplayName("Should successfully map valid SMF4J Tags to Micrometer Tags")
     void testMap_WithValidTags_ReturnsMappedMicrometerTags() {
         List<Tag> input = Arrays.asList(
-                Tag.builder().key("env").value("prod").build(),
-                Tag.builder().key("region").value("us-east").build()
+                Tag.of("env","prod"),
+                Tag.of("region","us-east")
         );
 
         Tags result = TagsMapper.map(input);
@@ -61,10 +61,10 @@ class TagsMapperTest {
     @DisplayName("Should filter out null tag objects, null keys, and null values")
     void testMap_WithInvalidTags_FiltersOutNulls() {
         List<Tag> input = new ArrayList<>();
-        input.add(Tag.builder().key("validKey").value("validValue").build());
+        input.add(Tag.of("validKey","validValue"));
         input.add(null); // Null tag object
-        input.add(Tag.builder().key(null).value("someValue").build()); // Null key
-        input.add(Tag.builder().key("someKey").value(null).build()); // Null value
+        input.add(Tag.of(null,"someValue"));
+        input.add(Tag.of("someKey",null));
 
         Tags result = TagsMapper.map(input);
 

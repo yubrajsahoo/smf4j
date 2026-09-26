@@ -7,9 +7,7 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>io.github.yubrajsahoo.smf4j.engine</groupId>
     <artifactId>smf4j-engine</artifactId>
-    <packaging>jar</packaging>
 
     <name>smf4j-engine</name>
     <url>http://maven.apache.org</url>
@@ -19,10 +17,35 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>io.github.yubrajsahoo</groupId>
+            <artifactId>smf4j-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Spring Boot Auto Configuration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Spring Expression Language -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-expression</artifactId>
+        </dependency>
+
+        <!-- Spring Context / AOP infrastructure -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- Spring AOP -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
     </dependencies>
 </project>

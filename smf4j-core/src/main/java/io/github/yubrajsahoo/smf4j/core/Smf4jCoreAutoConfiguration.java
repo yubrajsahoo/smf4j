@@ -14,6 +14,8 @@
 package io.github.yubrajsahoo.smf4j.core;
 
 import io.github.yubrajsahoo.smf4j.core.factory.MeterFactory;
+import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
+import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
 import io.github.yubrajsahoo.smf4j.core.service.MeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.CounterMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
@@ -38,6 +40,17 @@ import java.util.List;
 public class Smf4jCoreAutoConfiguration {
 
     /**
+     * Creates a {@link MetricsLogger} bean if none is defined.
+     *
+     * @return a new {@link DefaultMetricsLogger} instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(MetricsLogger.class)
+    public MetricsLogger metricsLogger() {
+        return new DefaultMetricsLogger();
+    }
+
+    /**
      * Registers a fallback {@link SimpleMeterRegistry} if no {@link MeterRegistry} bean is currently present in the application context.
      *
      * @return a default {@link SimpleMeterRegistry} instance
@@ -59,6 +72,7 @@ public class Smf4jCoreAutoConfiguration {
      * @return a new {@link MeterFactory} instance
      */
     @Bean
+    @ConditionalOnMissingBean(MeterFactory.class)
     public MeterFactory meterFactory(List<MeterService> meterServices) {
         return new MeterFactory(meterServices);
     }

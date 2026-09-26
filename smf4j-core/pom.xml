@@ -7,9 +7,7 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>io.github.yubrajsahoo.smf4j.core</groupId>
     <artifactId>smf4j-core</artifactId>
-    <packaging>jar</packaging>
 
     <name>smf4j-core</name>
     <url>http://maven.apache.org</url>

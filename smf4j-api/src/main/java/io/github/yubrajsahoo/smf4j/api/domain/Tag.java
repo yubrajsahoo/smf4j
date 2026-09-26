@@ -37,99 +37,33 @@ public class Tag {
     }
 
     /**
-     * Constructs a tag using the provided builder.
+     * Constructor for tags.
      *
-     * @param builder the builder containing tag data
+     * @param key   the tags key
+     * @param value tags values
      */
-    private Tag(Builder builder) {
-        this.key = builder.key;
-        this.value = builder.value;
+    public Tag(String key, String value) {
+        this.key = key;
+        this.value = value;
     }
 
-    /**
-     * Retrieves the key of this tag.
-     *
-     * @return the tag key
-     */
+    public static Tag of(String key, String value) {
+        return new Tag(key, value);
+    }
+
     public String getKey() {
         return key;
     }
 
-    /**
-     * Sets the key of this tag.
-     *
-     * @param key the tag key
-     */
     public void setKey(String key) {
         this.key = key;
     }
 
-    /**
-     * Retrieves the value of this tag.
-     *
-     * @return the tag value
-     */
     public String getValue() {
         return value;
     }
 
-    /**
-     * Sets the value of this tag.
-     *
-     * @param value the tag value
-     */
     public void setValue(String value) {
         this.value = value;
-    }
-
-    /**
-     * Creates a new builder instance for constructing a {@link Tag}.
-     *
-     * @return a new {@link Builder} instance
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
-     * A builder class for creating {@link Tag} instances in a fluent manner.
-     */
-    public static class Builder {
-        private String key;
-        private String value;
-
-        private Builder() {
-        }
-
-        /**
-         * Sets the key for the tag.
-         *
-         * @param key the tag key
-         * @return this builder instance
-         */
-        public Builder key(String key) {
-            this.key = key;
-            return this;
-        }
-
-        /**
-         * Sets the value for the tag.
-         *
-         * @param value the tag value
-         * @return this builder instance
-         */
-        public Builder value(String value) {
-            this.value = value;
-            return this;
-        }
-
-        /**
-         * Builds and returns a new {@link Tag} instance using the configured properties.
-         *
-         * @return a new {@link Tag}
-         */
-        public Tag build() {
-            return new Tag(this);
-        }
     }
 }

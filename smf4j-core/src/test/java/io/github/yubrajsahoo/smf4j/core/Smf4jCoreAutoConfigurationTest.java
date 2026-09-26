@@ -13,6 +13,7 @@
 
 package io.github.yubrajsahoo.smf4j.core;
 
+import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
 import io.github.yubrajsahoo.smf4j.core.service.impl.CounterMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
@@ -37,6 +38,7 @@ class Smf4jCoreAutoConfigurationTest {
     @DisplayName("Should load default beans when no custom beans are provided")
     void shouldLoadDefaultBeans() {
         contextRunner.run(context -> {
+            assertThat(context).hasSingleBean(MetricsLogger.class);
             assertThat(context).hasSingleBean(MeterRegistry.class);
             assertThat(context).hasSingleBean(CounterMeterService.class);
             assertThat(context).hasSingleBean(GaugeMeterService.class);

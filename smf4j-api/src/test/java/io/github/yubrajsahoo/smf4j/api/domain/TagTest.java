@@ -20,10 +20,7 @@ class TagTest {
     @Test
     @DisplayName("Test Builder")
     void testBuilder() {
-        Tag tag = Tag.builder()
-                .key("bk1")
-                .value("bv1")
-                .build();
+        Tag tag = Tag.of("bk1", "bv1");
 
         assertThat(tag.getKey()).isEqualTo("bk1");
         assertThat(tag.getValue()).isEqualTo("bv1");

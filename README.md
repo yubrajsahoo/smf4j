@@ -1,5 +1,7 @@
 # SMF4J - Simple Metrics Facade for Java
 
+📖 **[Official Documentation](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**
+
 **SMF4J (Simple Metrics Facade for Java)** is a lightweight library designed to simplify the collection and publishing of metrics in Java applications, particularly those using Spring Boot and Micrometer. It provides easy-to-use annotations like `@Counter`, `@Timer`, and `@Gauge` with support for dynamic tag evaluation using Spring Expression Language (SpEL).
 
 ## Modules
@@ -67,7 +69,7 @@ public int getActiveSessions() { ... }
 
 ## Detailed Documentation
 
-For a comprehensive guide, including detailed SpEL context examples, programmatic metrics setup, and full architecture overview, please read the **[Full Project Documentation](./DOCUMENTATION.md)**.
+For a comprehensive guide, including detailed SpEL context examples, programmatic metrics setup, and full architecture overview, please visit the **[Official SMF4J Documentation Website](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**. You can also refer to the local **[DOCUMENTATION.md](./DOCUMENTATION.md)** for offline reading.
 
 ## Building the Library
 

@@ -19,16 +19,16 @@ The project is structured into three main modules:
 
 ## Installation
 
-Add the following dependency to your `pom.xml`. (Make sure to replace `${smf4j.version}` with the latest version):
+If you are using Spring Boot, add the starter dependency to your `pom.xml`. (Make sure to replace `${smf4j.version}` with the latest version):
 
 ```xml
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
-    <artifactId>smf4j-engine</artifactId>
+    <artifactId>smf4j-spring-boot-starter</artifactId>
     <version>${smf4j.version}</version>
 </dependency>
 ```
-*Note: Adding `smf4j-engine` transitively pulls in `smf4j-core` and `smf4j-api`.*
+*Note: The starter transitively pulls in all required modules (`api`, `core`, and `engine`) and seamlessly connects to your Spring Boot auto-configuration.*
 
 ## Proper Use Cases
 

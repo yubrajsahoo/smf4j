@@ -104,10 +104,18 @@ public final class SpelContextBuilder {
         String[] parameterNames = signature.getParameterNames();
         Object[] arguments = joinPoint.getArgs();
 
-        if (parameterNames != null && arguments != null) {
-            int length = Math.min(parameterNames.length, arguments.length);
-            for (int i = 0; i < length; i++) {
-                context.setVariable(parameterNames[i], arguments[i]);
+        if (arguments != null) {
+            context.setVariable("args", arguments);
+            for (int i = 0; i < arguments.length; i++) {
+                context.setVariable("a" + i, arguments[i]);
+                context.setVariable("p" + i, arguments[i]);
+            }
+
+            if (parameterNames != null) {
+                int length = Math.min(parameterNames.length, arguments.length);
+                for (int i = 0; i < length; i++) {
+                    context.setVariable(parameterNames[i], arguments[i]);
+                }
             }
         }
     }

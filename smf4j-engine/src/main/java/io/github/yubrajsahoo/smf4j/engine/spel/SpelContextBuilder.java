@@ -105,7 +105,8 @@ public final class SpelContextBuilder {
         Object[] arguments = joinPoint.getArgs();
 
         if (parameterNames != null && arguments != null) {
-            for (int i = 0; i < parameterNames.length && i < arguments.length; i++) {
+            int length = Math.min(parameterNames.length, arguments.length);
+            for (int i = 0; i < length; i++) {
                 context.setVariable(parameterNames[i], arguments[i]);
             }
         }

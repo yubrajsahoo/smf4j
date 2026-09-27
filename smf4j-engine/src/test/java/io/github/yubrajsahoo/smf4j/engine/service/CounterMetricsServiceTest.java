@@ -138,4 +138,45 @@ class CounterMetricsServiceTest {
         String expectedMessage = "Metrics Logs For With->name=test.happy.counter->description=none->increment=1";
         assertEquals(expectedMessage, formattedMessage);
     }
+
+    @Test
+    @DisplayName("recordCounter with Metrics should log and delegate to MeterService when enabled")
+    void recordCounter_withEnabledMetrics() {
+        CounterMetrics metrics = CounterMetrics.builder()
+                .name("test.enabled.metrics")
+                .description("enabled test")
+                .enable(true)
+                .increment(2)
+                .tags(java.util.Collections.emptyList())
+                .build();
+
+        counterMetricsService.recordCounter(metrics, io.github.yubrajsahoo.smf4j.api.enums.LogLevel.INFO);
+
+        Counter recordedCounter = meterRegistry.find("test.enabled.metrics").counter();
+        assertNotNull(recordedCounter);
+        assertEquals(2.0, recordedCounter.count());
+
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        Assertions.assertTrue(formattedMessage.contains("test.enabled.metrics"));
+    }
+
+    @Test
+    @DisplayName("recordCounter with Metrics should log and return when disabled")
+    void recordCounter_withDisabledMetrics() {
+        CounterMetrics metrics = CounterMetrics.builder()
+                .name("test.disabled.metrics")
+                .description("disabled test")
+                .enable(false)
+                .increment(1)
+                .tags(java.util.Collections.emptyList())
+                .build();
+
+        counterMetricsService.recordCounter(metrics, io.github.yubrajsahoo.smf4j.api.enums.LogLevel.INFO);
+
+        Counter recordedCounter = meterRegistry.find("test.disabled.metrics").counter();
+        Assertions.assertNull(recordedCounter);
+
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        Assertions.assertTrue(formattedMessage.contains("test.disabled.metrics"));
+    }
 }

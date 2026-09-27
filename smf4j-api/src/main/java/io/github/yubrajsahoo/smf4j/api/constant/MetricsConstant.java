@@ -77,6 +77,8 @@ public final class MetricsConstant {
 
     public static final String ERROR_METRICS = "ERROR";
 
+    public static final String LEVEL = "LEVEL";
+
 
     /**
      * Private constructor to prevent instantiation of utility class.

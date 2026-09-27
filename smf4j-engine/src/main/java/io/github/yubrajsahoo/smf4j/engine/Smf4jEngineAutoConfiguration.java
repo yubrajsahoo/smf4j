@@ -25,6 +25,7 @@ import io.github.yubrajsahoo.smf4j.engine.service.impl.CounterMetricsService;
 import io.github.yubrajsahoo.smf4j.engine.service.impl.GaugeMetricsService;
 import io.github.yubrajsahoo.smf4j.engine.service.impl.TimerMetricsService;
 import io.github.yubrajsahoo.smf4j.engine.spel.SpelEvaluator;
+import io.github.yubrajsahoo.smf4j.engine.utils.LogMetrics;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -160,5 +161,11 @@ public class Smf4jEngineAutoConfiguration {
     @ConditionalOnMissingBean(GaugeAnnotationProcessor.class)
     public GaugeAnnotationProcessor gaugeAnnotationProcessor(GaugeMetricsService gaugeMetricsService, BeanResolver beanResolver) {
         return new GaugeAnnotationProcessor(gaugeMetricsService, beanResolver);
+    }
+
+    @Bean
+    @SuppressWarnings("all")
+    public LogMetrics logMetrics(CounterMetricsService counterMetricsService){
+        return new LogMetrics(counterMetricsService);
     }
 }

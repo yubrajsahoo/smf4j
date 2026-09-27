@@ -18,19 +18,19 @@ import static org.mockito.Mockito.*;
 class LogMetricsTest {
 
     private CounterMetricsService metricsService;
-    private LogMetrics logMetrics;
 
     @BeforeEach
     void setUp() {
         metricsService = mock(CounterMetricsService.class);
-        logMetrics = new LogMetrics(metricsService);
+        // Initialize the static fields of LogMetrics
+        new LogMetrics(metricsService);
     }
 
     @Test
     @DisplayName("Should log metrics with specific log level")
     void logWithSpecificLevel() {
         Tag customTag = new Tag("key", "value");
-        logMetrics.log("test.metric", "Test Description", true, LogLevel.DISABLED, customTag);
+        LogMetrics.log("test.metric", "Test Description", true, LogLevel.DISABLED, customTag);
 
         ArgumentCaptor<Metrics> metricsCaptor = ArgumentCaptor.forClass(Metrics.class);
         verify(metricsService).recordCounter(metricsCaptor.capture(), eq(LogLevel.DISABLED));
@@ -47,7 +47,7 @@ class LogMetricsTest {
     @Test
     @DisplayName("Should log metrics with DEBUG level")
     void debugLevel() {
-        logMetrics.debug("debug.metric", "Debug Description", false);
+        LogMetrics.debug("debug.metric", "Debug Description", false);
 
         ArgumentCaptor<Metrics> metricsCaptor = ArgumentCaptor.forClass(Metrics.class);
         verify(metricsService).recordCounter(metricsCaptor.capture(), eq(LogLevel.DEBUG));
@@ -61,7 +61,7 @@ class LogMetricsTest {
     @Test
     @DisplayName("Should log metrics with INFO level")
     void infoLevel() {
-        logMetrics.info("info.metric", "Info Description", true);
+        LogMetrics.info("info.metric", "Info Description", true);
 
         ArgumentCaptor<Metrics> metricsCaptor = ArgumentCaptor.forClass(Metrics.class);
         verify(metricsService).recordCounter(metricsCaptor.capture(), eq(LogLevel.INFO));
@@ -74,7 +74,7 @@ class LogMetricsTest {
     @Test
     @DisplayName("Should log metrics with WARN level")
     void warnLevel() {
-        logMetrics.warn("warn.metric", "Warn Description", true);
+        LogMetrics.warn("warn.metric", "Warn Description", true);
 
         ArgumentCaptor<Metrics> metricsCaptor = ArgumentCaptor.forClass(Metrics.class);
         verify(metricsService).recordCounter(metricsCaptor.capture(), eq(LogLevel.WARN));
@@ -87,7 +87,7 @@ class LogMetricsTest {
     @Test
     @DisplayName("Should log metrics with ERROR level")
     void errorLevel() {
-        logMetrics.error("error.metric", "Error Description", true);
+        LogMetrics.error("error.metric", "Error Description", true);
 
         ArgumentCaptor<Metrics> metricsCaptor = ArgumentCaptor.forClass(Metrics.class);
         verify(metricsService).recordCounter(metricsCaptor.capture(), eq(LogLevel.ERROR));

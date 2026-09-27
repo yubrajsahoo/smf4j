@@ -41,7 +41,7 @@ public class LogMetrics {
      * @param level       the {@link LogLevel} at which to record the metric
      * @param tags        an array of {@link Tag}s associated with the metric
      */
-    public void log(String name, String description, boolean enabled, LogLevel level, Tag... tags) {
+    public static void log(String name, String description, boolean enabled, LogLevel level, Tag... tags) {
         Metrics metrics = buildCounter(level, name, description, enabled, tags);
         metricsService.recordCounter(metrics, level);
     }
@@ -54,7 +54,7 @@ public class LogMetrics {
      * @param enabled     whether the metric collection is enabled
      * @param tags        an array of {@link Tag}s associated with the metric
      */
-    public void debug(String name, String description, boolean enabled, Tag... tags) {
+    public static void debug(String name, String description, boolean enabled, Tag... tags) {
         LogLevel level = LogLevel.DEBUG;
 
         Metrics metrics = buildCounter(level, name, description, enabled, tags);
@@ -69,7 +69,7 @@ public class LogMetrics {
      * @param enabled     whether the metric collection is enabled
      * @param tags        an array of {@link Tag}s associated with the metric
      */
-    public void info(String name, String description, boolean enabled, Tag... tags) {
+    public static void info(String name, String description, boolean enabled, Tag... tags) {
         LogLevel level = LogLevel.INFO;
 
         Metrics metrics = buildCounter(level, name, description, enabled, tags);
@@ -84,7 +84,7 @@ public class LogMetrics {
      * @param enabled     whether the metric collection is enabled
      * @param tags        an array of {@link Tag}s associated with the metric
      */
-    public void warn(String name, String description, boolean enabled, Tag... tags) {
+    public static void warn(String name, String description, boolean enabled, Tag... tags) {
         LogLevel level = LogLevel.WARN;
 
         Metrics metrics = buildCounter(level, name, description, enabled, tags);
@@ -99,7 +99,7 @@ public class LogMetrics {
      * @param enabled     whether the metric collection is enabled
      * @param tags        an array of {@link Tag}s associated with the metric
      */
-    public void error(String name, String description, boolean enabled, Tag... tags) {
+    public static void error(String name, String description, boolean enabled, Tag... tags) {
         LogLevel level = LogLevel.ERROR;
 
         Metrics metrics = buildCounter(level, name, description, enabled, tags);
@@ -116,7 +116,7 @@ public class LogMetrics {
      * @param tags        an array of {@link Tag}s associated with the metric
      * @return the constructed {@link Metrics} instance
      */
-    private Metrics buildCounter(LogLevel level, String name, String description, boolean enabled, Tag... tags) {
+    private static Metrics buildCounter(LogLevel level, String name, String description, boolean enabled, Tag... tags) {
         List<Tag> tagList = new java.util.ArrayList<>(List.of(tags));
         tagList.add(new Tag(MetricsConstant.LEVEL, level.name()));
 

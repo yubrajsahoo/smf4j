@@ -13,6 +13,7 @@
 
 package io.github.yubrajsahoo.smf4j.core;
 
+import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
 import io.github.yubrajsahoo.smf4j.core.factory.MeterFactory;
 import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
 import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
@@ -22,9 +23,9 @@ import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
 import java.util.List;
@@ -40,16 +41,22 @@ import java.util.List;
 @AutoConfiguration
 public class Smf4jCoreAutoConfiguration {
 
+    @Bean
+    @ConfigurationProperties(prefix = "smf4j.metrics")
+    public Smf4jMetricsProperties smf4jMetricsProperties() {
+        return new Smf4jMetricsProperties();
+    }
+
     /**
      * Creates a {@link MetricsLogger} bean if none is defined.
      *
-     * @param logLevel the log level for metric logs (DEBUG, INFO, WARN, ERROR), defaults to INFO
+     * @param properties the metric logging properties
      * @return a new {@link DefaultMetricsLogger} instance
      */
     @Bean
     @ConditionalOnMissingBean(MetricsLogger.class)
-    public MetricsLogger metricsLogger(@Value("${smf4j.metrics.log-level:INFO}") String logLevel) {
-        return new DefaultMetricsLogger(logLevel);
+    public MetricsLogger metricsLogger(Smf4jMetricsProperties smf4jMetricsProperties) {
+       return new DefaultMetricsLogger(smf4jMetricsProperties);
     }
 
     /**

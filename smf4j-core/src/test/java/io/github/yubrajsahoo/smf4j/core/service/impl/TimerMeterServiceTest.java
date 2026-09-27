@@ -97,4 +97,16 @@ class TimerMeterServiceTest {
         });
         assertThat(ex.getMessage()).isEqualTo("Invalid metrics type for TimerMeterService");
     }
+
+    @Test
+    @DisplayName("Should throw exception when TimerMetrics has no valid sample")
+    void testRecordMetrics_WithTimerMetricsNullSample() {
+        TimerMetrics timerMetrics = JsonConverter.fromJsonFile("/json/timer-metrics.json", TimerMetrics.class);
+        timerMetrics.setSample(null); // Explicitly set null to cover branch
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            service.recordMetrics(timerMetrics);
+        });
+        assertThat(ex.getMessage()).isEqualTo("Invalid metrics type for TimerMeterService");
+    }
 }

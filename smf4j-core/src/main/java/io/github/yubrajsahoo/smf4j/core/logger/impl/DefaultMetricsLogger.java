@@ -18,7 +18,7 @@
 
 package io.github.yubrajsahoo.smf4j.core.logger.impl;
 
-import io.github.yubrajsahoo.smf4j.api.constant.MetricsConstant;
+import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Metrics;
 import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
@@ -31,14 +31,10 @@ import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
  * @since 0.0.1
  */
 public class DefaultMetricsLogger extends MetricsLogger {
-    private final String logLevel;
+    private final Smf4jMetricsProperties metricsProperties;
 
-    public DefaultMetricsLogger() {
-        this.logLevel = "INFO";
-    }
-
-    public DefaultMetricsLogger(String logLevel) {
-        this.logLevel = logLevel != null ? logLevel.toUpperCase() : "INFO";
+    public DefaultMetricsLogger(Smf4jMetricsProperties smf4jMetricsProperties) {
+        this.metricsProperties = smf4jMetricsProperties;
     }
 
     /**
@@ -54,15 +50,19 @@ public class DefaultMetricsLogger extends MetricsLogger {
     @Override
     public void log(Metrics metrics) {
         String message = metrics.isEnable()
-                ? MetricsConstant.DEFAULT_LOG_MESSAGE
-                : MetricsConstant.DEFAULT_DISABLED_LOG_MESSAGE;
+                ? metricsProperties.getLogMessage()
+                : metricsProperties.getDisableLogMessage();
 
-        String logMessage = prepareLog(message, metrics);
+        String level = metrics.isEnable()
+                ? metricsProperties.getLogLevel()
+                : metricsProperties.getDisableLogLevel();
+
+        String preparedLog = prepareLog(message, metrics);
 
         if (metrics instanceof CounterMetrics counterMetrics) {
-            logMessage += "->" + "increment=" + counterMetrics.getIncrement();
+            preparedLog += "->" + "increment=" + counterMetrics.getIncrement();
         }
 
-        logMessage(logLevel, logMessage);
+        logMessage(level, preparedLog);
     }
 }

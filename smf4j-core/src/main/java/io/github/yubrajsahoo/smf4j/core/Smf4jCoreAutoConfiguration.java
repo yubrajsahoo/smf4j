@@ -41,6 +41,11 @@ import java.util.List;
 @AutoConfiguration
 public class Smf4jCoreAutoConfiguration {
 
+    /**
+     * Creates a {@link Smf4jMetricsProperties} bean and binds properties prefixed with "smf4j.metrics".
+     *
+     * @return a new {@link Smf4jMetricsProperties} instance
+     */
     @Bean
     @ConfigurationProperties(prefix = "smf4j.metrics")
     public Smf4jMetricsProperties smf4jMetricsProperties() {
@@ -50,7 +55,7 @@ public class Smf4jCoreAutoConfiguration {
     /**
      * Creates a {@link MetricsLogger} bean if none is defined.
      *
-     * @param properties the metric logging properties
+     * @param smf4jMetricsProperties the metric logging properties
      * @return a new {@link DefaultMetricsLogger} instance
      */
     @Bean

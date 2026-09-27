@@ -68,7 +68,7 @@ class GaugeMetricsServiceTest {
     @BeforeEach
     void setUp() {
         meterRegistry.clear();
-        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger.class);
         listAppender = new ListAppender<>();
         listAppender.start();
         logger.addAppender(listAppender);
@@ -76,7 +76,7 @@ class GaugeMetricsServiceTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }

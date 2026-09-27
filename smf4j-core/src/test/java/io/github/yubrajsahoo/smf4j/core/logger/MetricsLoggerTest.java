@@ -29,7 +29,7 @@ class MetricsLoggerTest {
 
     @BeforeEach
     void setUp() {
-        Logger logger = (Logger) LoggerFactory.getLogger(MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
         logger.setLevel(ch.qos.logback.classic.Level.ALL);
 
         listAppender = new ListAppender<>();
@@ -40,7 +40,7 @@ class MetricsLoggerTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }
@@ -156,6 +156,11 @@ class MetricsLoggerTest {
             public void log(Metrics m) {
                 // Not used
             }
+
+            @Override
+            public void log(Metrics metrics, io.github.yubrajsahoo.smf4j.api.enums.LogLevel level) {
+                // Not used
+            }
         };
 
         String logOutput = abstractLogger.prepareLog("Prefix->", metrics);
@@ -174,6 +179,11 @@ class MetricsLoggerTest {
         MetricsLogger abstractLogger = new MetricsLogger() {
             @Override
             public void log(Metrics m) {
+                // Not used
+            }
+
+            @Override
+            public void log(Metrics metrics, io.github.yubrajsahoo.smf4j.api.enums.LogLevel level) {
                 // Not used
             }
         };

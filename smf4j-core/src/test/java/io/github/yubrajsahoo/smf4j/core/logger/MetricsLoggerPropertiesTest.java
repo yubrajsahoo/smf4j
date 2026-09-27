@@ -6,6 +6,7 @@ import ch.qos.logback.core.read.ListAppender;
 import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.core.Smf4jCoreAutoConfiguration;
+import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +38,7 @@ class MetricsLoggerPropertiesTest {
 
     @BeforeEach
     void setUp() {
-        Logger logger = (Logger) LoggerFactory.getLogger(MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
         logger.setLevel(ch.qos.logback.classic.Level.ALL);
 
         listAppender = new ListAppender<>();
@@ -48,7 +49,7 @@ class MetricsLoggerPropertiesTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }

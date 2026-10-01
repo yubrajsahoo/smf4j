@@ -18,7 +18,7 @@
 
 package io.github.yubrajsahoo.smf4j.core.logger.impl;
 
-import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
+import io.github.yubrajsahoo.smf4j.api.config.LoggerConfigProperties;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Metrics;
 import io.github.yubrajsahoo.smf4j.api.enums.LogLevel;
@@ -36,10 +36,10 @@ import org.slf4j.LoggerFactory;
 public class DefaultMetricsLogger extends MetricsLogger {
     private static final Logger logger = LoggerFactory.getLogger(DefaultMetricsLogger.class);
 
-    private final Smf4jMetricsProperties metricsProperties;
+    private final LoggerConfigProperties metricsProperties;
 
-    public DefaultMetricsLogger(Smf4jMetricsProperties smf4jMetricsProperties) {
-        this.metricsProperties = smf4jMetricsProperties;
+    public DefaultMetricsLogger(LoggerConfigProperties loggerConfigProperties) {
+        this.metricsProperties = loggerConfigProperties;
     }
 
     /**

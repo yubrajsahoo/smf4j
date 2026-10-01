@@ -13,7 +13,7 @@
 
 package config;
 
-import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
+import io.github.yubrajsahoo.smf4j.api.config.Smf4JProperties;
 import io.github.yubrajsahoo.smf4j.core.factory.MeterFactory;
 import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
 import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
@@ -41,27 +41,16 @@ import java.util.List;
 @Configuration
 public class Smf4jCoreTestConfiguration {
 
-    /**
-     * Creates a {@link Smf4jMetricsProperties} bean and binds properties prefixed with "smf4j.metrics".
-     *
-     * @return a new {@link Smf4jMetricsProperties} instance
-     */
     @Bean
-    @ConfigurationProperties(prefix = "smf4j.metrics")
-    public Smf4jMetricsProperties smf4jMetricsProperties() {
-        return new Smf4jMetricsProperties();
+    @ConfigurationProperties(prefix = "smf4j")
+    public Smf4JProperties smf4JProperties() {
+        return new Smf4JProperties();
     }
 
-    /**
-     * Creates a {@link MetricsLogger} bean if none is defined.
-     *
-     * @param smf4jMetricsProperties the metric logging properties
-     * @return a new {@link DefaultMetricsLogger} instance
-     */
     @Bean
     @ConditionalOnMissingBean(MetricsLogger.class)
-    public MetricsLogger metricsLogger(Smf4jMetricsProperties smf4jMetricsProperties) {
-       return new DefaultMetricsLogger(smf4jMetricsProperties);
+    public MetricsLogger metricsLogger(Smf4JProperties smf4JProperties) {
+       return new DefaultMetricsLogger(smf4JProperties.getLoggerConfig());
     }
 
     /**

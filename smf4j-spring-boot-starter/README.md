@@ -18,6 +18,15 @@ Add the following dependency to your `pom.xml`:
 
 This starter transitively pulls in `smf4j-api`, `smf4j-core`, and `smf4j-engine`, along with the base `spring-boot-starter` and `micrometer-core`.
 
+## Configuration
+
+You can configure default properties in your `application.properties` or `application.yml`:
+
+```properties
+smf4j.log-metrics.name=smf4j.log.metrics
+smf4j.log-metrics.description=none
+```
+
 ## Build Commands
 Run from the root of the project to build this module (Fast Install):
 ```bash

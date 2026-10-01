@@ -1,6 +1,6 @@
 package io.github.yubrajsahoo.smf4j.spring.boot.starter.config;
 
-import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
+import io.github.yubrajsahoo.smf4j.api.config.Smf4JProperties;
 import io.github.yubrajsahoo.smf4j.core.factory.MeterFactory;
 import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
 import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
@@ -36,7 +36,7 @@ class Smf4jAutoConfigurationTest {
 
     @Test
     void shouldRegisterDefaultBeans() {
-        assertThat(context.getBean(Smf4jMetricsProperties.class)).isNotNull();
+        assertThat(context.getBean(Smf4JProperties.class)).isNotNull();
         assertThat(context.getBean(MetricsLogger.class)).isInstanceOf(DefaultMetricsLogger.class);
         assertThat(context.getBean(MeterRegistry.class)).isInstanceOf(SimpleMeterRegistry.class);
         assertThat(context.getBean(MeterFactory.class)).isNotNull();

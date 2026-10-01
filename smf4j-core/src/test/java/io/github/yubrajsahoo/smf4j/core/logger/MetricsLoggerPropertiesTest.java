@@ -21,10 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(
         classes = Smf4jCoreTestConfiguration.class,
         properties = {
-                "smf4j.metrics.logLevel=WARN",
-                "smf4j.metrics.logMessage=CustomPropLog->",
-                "smf4j.metrics.disableLogLevel=DEBUG",
-                "smf4j.metrics.disableLogMessage=CustomPropDisabledLog->"
+                "smf4j.logger-config.logLevel=WARN",
+                "smf4j.logger-config.logMessage=CustomPropLog->",
+                "smf4j.logger-config.disableLogLevel=DEBUG",
+                "smf4j.logger-config.disableLogMessage=CustomPropDisabledLog->"
         }
 )
 @EnableConfigurationProperties

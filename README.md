@@ -28,7 +28,7 @@ If you are using Spring Boot, add the starter dependency to your `pom.xml`:
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-spring-boot-starter</artifactId>
-    <version>0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
+    <version>0.0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
 </dependency>
 ```
 *Note: The starter transitively pulls in all required modules (`api`, `core`, and `engine`) and seamlessly connects to your Spring Boot auto-configuration.*

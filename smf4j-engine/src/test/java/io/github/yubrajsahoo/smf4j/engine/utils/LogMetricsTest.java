@@ -127,6 +127,26 @@ class LogMetricsTest {
     }
 
     @Test
+    @DisplayName("Should test overloaded methods with only tags (default enabled=true)")
+    void testOverloadedTagsOnlyMethods() {
+        LogMetrics.debug("k1", "v1");
+        LogMetrics.info("k2", "v2");
+        LogMetrics.warn("k3", "v3");
+        LogMetrics.error("k4", "v4");
+        LogMetrics.log(LogLevel.DISABLED, "k5", "v5");
+
+        ArgumentCaptor<Metrics> metricsCaptor = ArgumentCaptor.forClass(Metrics.class);
+        verify(metricsService, times(5)).recordCounter(metricsCaptor.capture(), any(LogLevel.class));
+
+        metricsCaptor.getAllValues().forEach(metrics -> {
+            assertTrue(metrics.isEnable());
+            assertEquals("default.metric", metrics.getName());
+            assertEquals("Default Description", metrics.getDescription());
+            assertTrue(metrics.getTags().size() >= 2);
+        });
+    }
+
+    @Test
     @DisplayName("Should handle null properties gracefully")
     void testNullProperties() {
         // Create new instance with null properties

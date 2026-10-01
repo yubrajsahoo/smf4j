@@ -18,13 +18,13 @@ import java.util.List;
  * {@link LogMetricsProperties} before its static methods can be effectively used.
  * </p>
  * <p>
- * If {@link LogMetricsProperties} are provided, you can omit the metric {@code name} 
- * and {@code description} in the log method calls, and it will fall back to the defaults 
+ * If {@link LogMetricsProperties} are provided, you can omit the metric {@code name}
+ * and {@code description} in the log method calls, and it will fall back to the defaults
  * specified in the properties.
  * </p>
  * <p>
- * Tags are passed as varargs of {@link String}s in sequential key-value pairs. 
- * For example: {@code LogMetrics.info(true, "key1", "value1", "key2", "value2")}. 
+ * Tags are passed as varargs of {@link String}s in sequential key-value pairs.
+ * For example: {@code LogMetrics.info(true, "key1", "value1", "key2", "value2")}.
  * An odd number of tag arguments will result in an {@link IllegalArgumentException}.
  * </p>
  *
@@ -69,6 +69,15 @@ public class LogMetrics {
     }
 
     /**
+     * Records a counter metric at the DEBUG log level using default name and description, enabled by default.
+     *
+     * @param tags key-value pairs of tags as strings
+     */
+    public static void debug(String... tags) {
+        log(true, LogLevel.DEBUG, tags);
+    }
+
+    /**
      * Records a counter metric at the INFO log level.
      *
      * @param name        the name of the metric
@@ -88,6 +97,15 @@ public class LogMetrics {
      */
     public static void info(boolean enabled, String... tags) {
         log(enabled, LogLevel.INFO, tags);
+    }
+
+    /**
+     * Records a counter metric at the INFO log level using default name and description, enabled by default.
+     *
+     * @param tags  key-value pairs of tags as strings
+     */
+    public static void info(String... tags) {
+        log(true, LogLevel.INFO, tags);
     }
 
     /**
@@ -113,6 +131,15 @@ public class LogMetrics {
     }
 
     /**
+     * Records a counter metric at the WARN log level using default name and description, enabled by default.
+     *
+     * @param tags key-value pairs of tags as strings
+     */
+    public static void warn(String... tags) {
+        log(true, LogLevel.WARN, tags);
+    }
+
+    /**
      * Records a counter metric at the ERROR log level.
      *
      * @param name        the name of the metric
@@ -132,6 +159,15 @@ public class LogMetrics {
      */
     public static void error(boolean enabled, String... tags) {
         log(enabled, LogLevel.ERROR, tags);
+    }
+
+    /**
+     * Records a counter metric at the ERROR log level using default name and description, enabled by default.
+     *
+     * @param tags key-value pairs of tags as strings
+     */
+    public static void error(String... tags) {
+        log(true, LogLevel.ERROR, tags);
     }
 
     /**
@@ -160,6 +196,16 @@ public class LogMetrics {
     }
 
     /**
+     * Records a counter metric at the specified log level using default name and description, enabled by default.
+     *
+     * @param level the {@link LogLevel} at which to record the metric
+     * @param tags  key-value pairs of tags as strings
+     */
+    public static void log(LogLevel level, String... tags) {
+        log(true, level, tags);
+    }
+
+    /**
      * Builds a {@link Metrics} instance for a counter.
      *
      * @param level       the {@link LogLevel} to associate with this metric
@@ -185,7 +231,7 @@ public class LogMetrics {
     /**
      * Converts an array of strings representing key-value pairs into a list of {@link Tag}s.
      *
-     * @param tags an array of strings where elements at even indices are keys and 
+     * @param tags an array of strings where elements at even indices are keys and
      *             elements at odd indices are values.
      * @return a list of constructed {@link Tag} instances
      * @throws IllegalArgumentException if an odd number of tags is provided

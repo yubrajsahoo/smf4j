@@ -5,7 +5,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
-import io.github.yubrajsahoo.smf4j.core.Smf4jCoreAutoConfiguration;
+import config.Smf4jCoreTestConfiguration;
 import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(
-        classes = Smf4jCoreAutoConfiguration.class,
+        classes = Smf4jCoreTestConfiguration.class,
         properties = {
                 "smf4j.metrics.logLevel=WARN",
                 "smf4j.metrics.logMessage=CustomPropLog->",

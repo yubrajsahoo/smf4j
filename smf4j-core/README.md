@@ -6,7 +6,7 @@ The `smf4j-core` module acts as the bridge between SMF4J and the underlying metr
 
 * **Micrometer Integration:** Uses Micrometer's `MeterRegistry` to record counters, timers, and gauges.
 * **Metric Services:** Provides implementations like `CounterMeterService`, `TimerMeterService`, and `GaugeMeterService` to handle the actual metric recording.
-* **Spring Boot Auto-Configuration:** Automatically configures the necessary beans (`Smf4jCoreAutoConfiguration`) when used in a Spring Boot application. If Micrometer is present, it will automatically connect to its `MeterRegistry`.
+* **Spring Boot Auto-Configuration:** Automatically configures the necessary beans (`Smf4jCoreTestConfiguration`) when used in a Spring Boot application. If Micrometer is present, it will automatically connect to its `MeterRegistry`.
 
 ## Installation
 

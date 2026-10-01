@@ -24,12 +24,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Spring Boot Auto Configuration -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-
         <!-- Micrometer -->
         <dependency>
             <groupId>io.micrometer</groupId>

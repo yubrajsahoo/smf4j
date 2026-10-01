@@ -3,10 +3,10 @@ package io.github.yubrajsahoo.smf4j.engine.aspect;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import config.Smf4jEngineTestConfiguration;
 import io.github.yubrajsahoo.smf4j.api.annotation.Tags;
 import io.github.yubrajsahoo.smf4j.api.annotation.Timer;
 import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
-import io.github.yubrajsahoo.smf4j.engine.Smf4jEngineTestAutoConfiguration;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = Smf4jEngineTestAutoConfiguration.class)
+@SpringBootTest(classes = Smf4jEngineTestConfiguration.class)
 class TimerAspectTest {
 
     @Autowired

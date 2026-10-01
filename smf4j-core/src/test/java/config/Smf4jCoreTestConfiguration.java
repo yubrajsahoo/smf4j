@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package io.github.yubrajsahoo.smf4j.core;
+package config;
 
 import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
 import io.github.yubrajsahoo.smf4j.core.factory.MeterFactory;
@@ -23,10 +23,10 @@ import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
 import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
@@ -38,8 +38,8 @@ import java.util.List;
  * when used in a Spring Boot environment.
  * </p>
  */
-@AutoConfiguration
-public class Smf4jCoreAutoConfiguration {
+@Configuration
+public class Smf4jCoreTestConfiguration {
 
     /**
      * Creates a {@link Smf4jMetricsProperties} bean and binds properties prefixed with "smf4j.metrics".

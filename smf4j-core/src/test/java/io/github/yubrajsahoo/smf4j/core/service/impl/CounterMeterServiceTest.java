@@ -18,7 +18,7 @@ import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.GaugeMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4j.api.enums.MetricsType;
-import io.github.yubrajsahoo.smf4j.core.Smf4jCoreAutoConfiguration;
+import config.Smf4jCoreTestConfiguration;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(classes = Smf4jCoreAutoConfiguration.class)
+@SpringBootTest(classes = Smf4jCoreTestConfiguration.class)
 class CounterMeterServiceTest {
 
     @Autowired

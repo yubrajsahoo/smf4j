@@ -21,12 +21,12 @@ package io.github.yubrajsahoo.smf4j.engine.service;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import config.Smf4jEngineTestConfiguration;
 import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4j.api.enums.MetricsType;
 import io.github.yubrajsahoo.smf4j.core.service.impl.TimerMeterService;
-import io.github.yubrajsahoo.smf4j.engine.Smf4jEngineTestAutoConfiguration;
 import io.github.yubrajsahoo.smf4j.engine.service.impl.TimerMetricsService;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("TimerMeterService Unit Test")
-@SpringBootTest(classes = Smf4jEngineTestAutoConfiguration.class)
+@SpringBootTest(classes = Smf4jEngineTestConfiguration.class)
 @org.springframework.test.annotation.DirtiesContext(classMode = org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TimerMetricsServiceTest {
     @Autowired

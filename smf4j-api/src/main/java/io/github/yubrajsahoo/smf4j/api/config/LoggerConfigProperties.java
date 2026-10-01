@@ -5,21 +5,21 @@ package io.github.yubrajsahoo.smf4j.api.config;
  * <p>
  * This class encapsulates the configuration for metric logging. It allows you to customize
  * the log levels and the messages used when metrics are recorded or when metric logging is disabled.
- * In a Spring Boot environment, these properties are typically bound to the {@code smf4j.metrics} prefix
+ * In a Spring Boot environment, these properties are typically bound to the {@code smf4j.logger-config} prefix
  * in your {@code application.yml} or {@code application.properties} file.
  * </p>
  *
  * <p><b>Example configuration (application.yml):</b></p>
  * <pre>
  * smf4j:
- *   metrics:
+ *   logger-config:
  *     log-level: INFO
  *     log-message: "Metrics Logs For With->"
  *     disable-log-level: DEBUG
  *     disable-log-message: "Metrics Disabled For->"
  * </pre>
  */
-public class Smf4jMetricsProperties {
+public class LoggerConfigProperties {
 
     /**
      * Default log level used when logging metrics.

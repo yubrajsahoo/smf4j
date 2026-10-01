@@ -6,7 +6,7 @@ import ch.qos.logback.core.read.ListAppender;
 import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Metrics;
-import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
+import io.github.yubrajsahoo.smf4j.api.config.LoggerConfigProperties;
 import config.Smf4jCoreTestConfiguration;
 import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
 import org.junit.jupiter.api.AfterEach;
@@ -85,7 +85,7 @@ class MetricsLoggerTest {
                 "/json/counter-metrics.json", CounterMetrics.class
         );
 
-        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        LoggerConfigProperties properties = new LoggerConfigProperties();
         properties.setLogLevel("DEBUG");
         properties.setLogMessage("");
         MetricsLogger customLogger = new DefaultMetricsLogger(properties);
@@ -102,7 +102,7 @@ class MetricsLoggerTest {
                 "/json/counter-metrics.json", CounterMetrics.class
         );
 
-        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        LoggerConfigProperties properties = new LoggerConfigProperties();
         properties.setLogLevel("WARN");
         MetricsLogger customLogger = new DefaultMetricsLogger(properties);
         customLogger.log(metrics);
@@ -118,7 +118,7 @@ class MetricsLoggerTest {
                 "/json/counter-metrics.json", CounterMetrics.class
         );
 
-        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        LoggerConfigProperties properties = new LoggerConfigProperties();
         properties.setLogLevel("ERROR");
         MetricsLogger customLogger = new DefaultMetricsLogger(properties);
         customLogger.log(metrics);
@@ -134,7 +134,7 @@ class MetricsLoggerTest {
                 "/json/counter-metrics.json", CounterMetrics.class
         );
 
-        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        LoggerConfigProperties properties = new LoggerConfigProperties();
         properties.setLogLevel("DISABLED");
         MetricsLogger customLogger = new DefaultMetricsLogger(properties);
         

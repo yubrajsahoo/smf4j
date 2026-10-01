@@ -79,7 +79,7 @@ public class Smf4jEngineTestConfiguration {
 
     @Bean
     @SuppressWarnings("all")
-    public LogMetrics logMetrics(CounterMetricsService counterMetricsService){
-        return new LogMetrics(counterMetricsService);
+    public LogMetrics logMetrics(CounterMetricsService counterMetricsService, io.github.yubrajsahoo.smf4j.api.config.Smf4JProperties smf4JProperties){
+        return new LogMetrics(counterMetricsService, smf4JProperties.getLogMetrics());
     }
 }

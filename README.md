@@ -67,6 +67,16 @@ Track the size of a cache or the number of active users currently logged in.
 public int getActiveSessions() { ... }
 ```
 
+## Configuration
+
+You can configure SMF4J using `application.properties` or `application.yml` in your Spring Boot application.
+
+```properties
+# Default log metrics properties
+smf4j.log-metrics.name=smf4j.log.metrics
+smf4j.log-metrics.description=none
+```
+
 ## Detailed Documentation
 
 For a comprehensive guide, including detailed SpEL context examples, programmatic metrics setup, and full architecture overview, please visit the **[Official SMF4J Documentation Website](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**.

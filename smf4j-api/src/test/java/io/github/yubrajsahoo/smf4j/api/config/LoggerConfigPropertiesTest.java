@@ -5,39 +5,39 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Smf4jMetricsProperties Unit Test")
-class Smf4jMetricsPropertiesTest {
+@DisplayName("LoggerConfigProperties Unit Test")
+class LoggerConfigPropertiesTest {
 
     @Test
     @DisplayName("Should return default values when fields are not set")
     void shouldReturnDefaultValues() {
-        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        LoggerConfigProperties properties = new LoggerConfigProperties();
 
-        assertEquals(Smf4jMetricsProperties.DEFAULT_LOG_LEVEL, properties.getLogLevel());
-        assertEquals(Smf4jMetricsProperties.DEFAULT_LOG_MESSAGE, properties.getLogMessage());
-        assertEquals(Smf4jMetricsProperties.DEFAULT_LOG_LEVEL, properties.getDisableLogLevel());
-        assertEquals(Smf4jMetricsProperties.DEFAULT_DISABLED_LOG_MESSAGE, properties.getDisableLogMessage());
+        assertEquals(LoggerConfigProperties.DEFAULT_LOG_LEVEL, properties.getLogLevel());
+        assertEquals(LoggerConfigProperties.DEFAULT_LOG_MESSAGE, properties.getLogMessage());
+        assertEquals(LoggerConfigProperties.DEFAULT_LOG_LEVEL, properties.getDisableLogLevel());
+        assertEquals(LoggerConfigProperties.DEFAULT_DISABLED_LOG_MESSAGE, properties.getDisableLogMessage());
     }
 
     @Test
     @DisplayName("Should return default values when fields are set to empty strings")
     void shouldReturnDefaultValuesWhenEmpty() {
-        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        LoggerConfigProperties properties = new LoggerConfigProperties();
         properties.setLogLevel("   ");
         properties.setLogMessage("");
         properties.setDisableLogLevel(" ");
         properties.setDisableLogMessage("\t");
 
-        assertEquals(Smf4jMetricsProperties.DEFAULT_LOG_LEVEL, properties.getLogLevel());
-        assertEquals(Smf4jMetricsProperties.DEFAULT_LOG_MESSAGE, properties.getLogMessage());
-        assertEquals(Smf4jMetricsProperties.DEFAULT_LOG_LEVEL, properties.getDisableLogLevel());
-        assertEquals(Smf4jMetricsProperties.DEFAULT_DISABLED_LOG_MESSAGE, properties.getDisableLogMessage());
+        assertEquals(LoggerConfigProperties.DEFAULT_LOG_LEVEL, properties.getLogLevel());
+        assertEquals(LoggerConfigProperties.DEFAULT_LOG_MESSAGE, properties.getLogMessage());
+        assertEquals(LoggerConfigProperties.DEFAULT_LOG_LEVEL, properties.getDisableLogLevel());
+        assertEquals(LoggerConfigProperties.DEFAULT_DISABLED_LOG_MESSAGE, properties.getDisableLogMessage());
     }
 
     @Test
     @DisplayName("Should return assigned values when fields are set")
     void shouldReturnAssignedValues() {
-        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        LoggerConfigProperties properties = new LoggerConfigProperties();
         
         properties.setLogLevel("DEBUG");
         properties.setLogMessage("Custom Log->");

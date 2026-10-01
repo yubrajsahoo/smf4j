@@ -18,8 +18,8 @@
 
 package io.github.yubrajsahoo.smf4j.engine.processor;
 
+import config.Smf4jEngineTestConfiguration;
 import io.github.yubrajsahoo.smf4j.api.annotation.Gauge;
-import io.github.yubrajsahoo.smf4j.engine.Smf4jEngineTestAutoConfiguration;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DisplayName("GaugeAnnotationProcessor Integration Test")
-@SpringBootTest(classes = {Smf4jEngineTestAutoConfiguration.class, GaugeAnnotationProcessorTest.TestConfig.class})
+@SpringBootTest(classes = {Smf4jEngineTestConfiguration.class, GaugeAnnotationProcessorTest.TestConfig.class})
 @org.springframework.test.annotation.DirtiesContext(classMode = org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class GaugeAnnotationProcessorTest {
 

@@ -100,6 +100,15 @@ class MeterFactoryTest {
         assertThat(result).isEmpty();
     }
 
+    @Test
+    @DisplayName("Should ignore null services in list")
+    void shouldIgnoreNullService() {
+        MeterService counterService = new StubMeterService(MetricsType.COUNTER);
+        MeterFactory factory = new MeterFactory(Arrays.asList(counterService, null));
+        Optional<MeterService> result = factory.getMeterService(MetricsType.COUNTER);
+        assertThat(result).isPresent().contains(counterService);
+    }
+
     private static class StubMeterService implements MeterService {
         private final MetricsType type;
 

@@ -17,7 +17,7 @@ For most users, this is the primary dependency to include, as it transitively br
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-engine</artifactId>
-    <version>${smf4j.version}</version>
+    <version>0.0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
 </dependency>
 ```
 
@@ -26,7 +26,8 @@ For most users, this is the primary dependency to include, as it transitively br
 Use this module when your application is a Spring Boot application and you wish to use a completely declarative (annotation-based) approach to metric tracking. The AOP aspects provided in this module will handle all boilerplate method interception and tag resolution automatically.
 
 ## Build Commands
-Run from the root of the project to build this module:
+Run from the root of the project to build this module (Fast Install):
 ```bash
-./mvnw clean install -pl smf4j-engine
+./mvnw clean install -pl smf4j-engine -DskipTests -Djacoco.skip=true -Dpitest.skip=true -Dsonar.skip=true
 ```
+For other types of builds (tests, mutation coverage, sonar analysis), please refer to the [Root README](../README.md#building-the-library).

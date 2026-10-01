@@ -18,10 +18,13 @@
 
 package io.github.yubrajsahoo.smf4j.core.logger.impl;
 
-import io.github.yubrajsahoo.smf4j.api.constant.MetricsConstant;
+import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Metrics;
+import io.github.yubrajsahoo.smf4j.api.enums.LogLevel;
 import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation of {@link MetricsLogger} for formatting and logging metric recording events at info level.
@@ -31,14 +34,12 @@ import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
  * @since 0.0.1
  */
 public class DefaultMetricsLogger extends MetricsLogger {
-    private final String logLevel;
+    private static final Logger logger = LoggerFactory.getLogger(DefaultMetricsLogger.class);
 
-    public DefaultMetricsLogger() {
-        this.logLevel = "INFO";
-    }
+    private final Smf4jMetricsProperties metricsProperties;
 
-    public DefaultMetricsLogger(String logLevel) {
-        this.logLevel = logLevel != null ? logLevel.toUpperCase() : "INFO";
+    public DefaultMetricsLogger(Smf4jMetricsProperties smf4jMetricsProperties) {
+        this.metricsProperties = smf4jMetricsProperties;
     }
 
     /**
@@ -53,9 +54,24 @@ public class DefaultMetricsLogger extends MetricsLogger {
      */
     @Override
     public void log(Metrics metrics) {
+        String level = metrics.isEnable()
+                ? metricsProperties.getLogLevel()
+                : metricsProperties.getDisableLogLevel();
+
+        log(metrics, LogLevel.getLogLevel(level));
+    }
+
+    /**
+     * Logs the details of a recorded {@link Metrics}.
+     *
+     * @param metrics the metric data to log
+     * @param level   the log level
+     */
+    @Override
+    public void log(Metrics metrics, LogLevel level) {
         String message = metrics.isEnable()
-                ? MetricsConstant.DEFAULT_LOG_MESSAGE
-                : MetricsConstant.DEFAULT_DISABLED_LOG_MESSAGE;
+                ? metricsProperties.getLogMessage()
+                : metricsProperties.getDisableLogMessage();
 
         String logMessage = prepareLog(message, metrics);
 
@@ -63,6 +79,6 @@ public class DefaultMetricsLogger extends MetricsLogger {
             logMessage += "->" + "increment=" + counterMetrics.getIncrement();
         }
 
-        logMessage(logLevel, logMessage);
+        LogLevel.log(logger, level, logMessage);
     }
 }

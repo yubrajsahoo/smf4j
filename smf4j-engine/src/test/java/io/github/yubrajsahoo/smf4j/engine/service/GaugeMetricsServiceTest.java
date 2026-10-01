@@ -21,12 +21,12 @@ package io.github.yubrajsahoo.smf4j.engine.service;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import config.Smf4jEngineTestConfiguration;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.GaugeMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Tag;
 import io.github.yubrajsahoo.smf4j.api.enums.MetricsType;
 import io.github.yubrajsahoo.smf4j.core.service.impl.GaugeMeterService;
-import io.github.yubrajsahoo.smf4j.engine.Smf4jEngineTestAutoConfiguration;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DisplayName("GaugeMeterService Unit Test")
-@SpringBootTest(classes = Smf4jEngineTestAutoConfiguration.class)
+@SpringBootTest(classes = Smf4jEngineTestConfiguration.class)
 @org.springframework.test.annotation.DirtiesContext(classMode = org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class GaugeMetricsServiceTest {
 
@@ -68,7 +68,7 @@ class GaugeMetricsServiceTest {
     @BeforeEach
     void setUp() {
         meterRegistry.clear();
-        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger.class);
         listAppender = new ListAppender<>();
         listAppender.start();
         logger.addAppender(listAppender);
@@ -76,7 +76,7 @@ class GaugeMetricsServiceTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }

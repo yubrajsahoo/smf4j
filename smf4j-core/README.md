@@ -6,7 +6,7 @@ The `smf4j-core` module acts as the bridge between SMF4J and the underlying metr
 
 * **Micrometer Integration:** Uses Micrometer's `MeterRegistry` to record counters, timers, and gauges.
 * **Metric Services:** Provides implementations like `CounterMeterService`, `TimerMeterService`, and `GaugeMeterService` to handle the actual metric recording.
-* **Spring Boot Auto-Configuration:** Automatically configures the necessary beans (`Smf4jCoreAutoConfiguration`) when used in a Spring Boot application. If Micrometer is present, it will automatically connect to its `MeterRegistry`.
+* **Spring Boot Auto-Configuration:** Automatically configures the necessary beans (`Smf4jCoreTestConfiguration`) when used in a Spring Boot application. If Micrometer is present, it will automatically connect to its `MeterRegistry`.
 
 ## Installation
 
@@ -14,7 +14,7 @@ The `smf4j-core` module acts as the bridge between SMF4J and the underlying metr
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-core</artifactId>
-    <version>${smf4j.version}</version>
+    <version>0.0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
 </dependency>
 ```
 
@@ -38,7 +38,8 @@ public class CustomMetricPublisher {
 ```
 
 ## Build Commands
-Run from the root of the project to build this module:
+Run from the root of the project to build this module (Fast Install):
 ```bash
-./mvnw clean install -pl smf4j-core
+./mvnw clean install -pl smf4j-core -DskipTests -Djacoco.skip=true -Dpitest.skip=true -Dsonar.skip=true
 ```
+For other types of builds (tests, mutation coverage, sonar analysis), please refer to the [Root README](../README.md#building-the-library).

@@ -18,8 +18,8 @@
 
 package io.github.yubrajsahoo.smf4j.engine.spel;
 
+import config.Smf4jEngineTestConfiguration;
 import io.github.yubrajsahoo.smf4j.api.constant.MetricsConstant;
-import io.github.yubrajsahoo.smf4j.engine.Smf4jEngineTestAutoConfiguration;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @DisplayName("SpelContextBuilder Unit Test")
-@SpringBootTest(classes = Smf4jEngineTestAutoConfiguration.class)
+@SpringBootTest(classes = Smf4jEngineTestConfiguration.class)
 class SpelContextBuilderTest {
 
     @Mock

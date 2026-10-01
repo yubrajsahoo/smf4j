@@ -7,7 +7,7 @@
     <!-- Adjust the groupId based on your preference -->
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>smf4j</name>
@@ -60,6 +60,7 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
+        <!-- Standard test dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -70,6 +71,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

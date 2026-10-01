@@ -6,7 +6,8 @@ import ch.qos.logback.core.read.ListAppender;
 import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Metrics;
-import io.github.yubrajsahoo.smf4j.core.Smf4jCoreAutoConfiguration;
+import io.github.yubrajsahoo.smf4j.api.config.Smf4jMetricsProperties;
+import config.Smf4jCoreTestConfiguration;
 import io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = Smf4jCoreAutoConfiguration.class)
+@SpringBootTest(classes = Smf4jCoreTestConfiguration.class)
 @DisplayName("MetricsLogger Unit Test")
 class MetricsLoggerTest {
     @Autowired
@@ -28,7 +29,7 @@ class MetricsLoggerTest {
 
     @BeforeEach
     void setUp() {
-        Logger logger = (Logger) LoggerFactory.getLogger(MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
         logger.setLevel(ch.qos.logback.classic.Level.ALL);
 
         listAppender = new ListAppender<>();
@@ -39,7 +40,7 @@ class MetricsLoggerTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(DefaultMetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }
@@ -84,7 +85,10 @@ class MetricsLoggerTest {
                 "/json/counter-metrics.json", CounterMetrics.class
         );
 
-        MetricsLogger customLogger = new DefaultMetricsLogger("DEBUG");
+        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        properties.setLogLevel("DEBUG");
+        properties.setLogMessage("");
+        MetricsLogger customLogger = new DefaultMetricsLogger(properties);
         customLogger.log(metrics);
 
         ILoggingEvent event = listAppender.list.get(0);
@@ -98,7 +102,9 @@ class MetricsLoggerTest {
                 "/json/counter-metrics.json", CounterMetrics.class
         );
 
-        MetricsLogger customLogger = new DefaultMetricsLogger("WARN");
+        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        properties.setLogLevel("WARN");
+        MetricsLogger customLogger = new DefaultMetricsLogger(properties);
         customLogger.log(metrics);
 
         ILoggingEvent event = listAppender.list.get(0);
@@ -112,11 +118,30 @@ class MetricsLoggerTest {
                 "/json/counter-metrics.json", CounterMetrics.class
         );
 
-        MetricsLogger customLogger = new DefaultMetricsLogger("ERROR");
+        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        properties.setLogLevel("ERROR");
+        MetricsLogger customLogger = new DefaultMetricsLogger(properties);
         customLogger.log(metrics);
 
         ILoggingEvent event = listAppender.list.get(0);
         assertEquals(ch.qos.logback.classic.Level.ERROR, event.getLevel());
+    }
+
+    @Test
+    @DisplayName("Test case for log with DISABLED level")
+    void testLog_disabled() {
+        CounterMetrics metrics = JsonConverter.fromJsonFile(
+                "/json/counter-metrics.json", CounterMetrics.class
+        );
+
+        Smf4jMetricsProperties properties = new Smf4jMetricsProperties();
+        properties.setLogLevel("DISABLED");
+        MetricsLogger customLogger = new DefaultMetricsLogger(properties);
+        
+        int initialSize = listAppender.list.size();
+        customLogger.log(metrics);
+
+        assertEquals(initialSize, listAppender.list.size(), "No logs should be appended when DISABLED");
     }
 
     @Test
@@ -129,6 +154,11 @@ class MetricsLoggerTest {
         MetricsLogger abstractLogger = new MetricsLogger() {
             @Override
             public void log(Metrics m) {
+                // Not used
+            }
+
+            @Override
+            public void log(Metrics metrics, io.github.yubrajsahoo.smf4j.api.enums.LogLevel level) {
                 // Not used
             }
         };
@@ -149,6 +179,11 @@ class MetricsLoggerTest {
         MetricsLogger abstractLogger = new MetricsLogger() {
             @Override
             public void log(Metrics m) {
+                // Not used
+            }
+
+            @Override
+            public void log(Metrics metrics, io.github.yubrajsahoo.smf4j.api.enums.LogLevel level) {
                 // Not used
             }
         };

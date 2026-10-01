@@ -28,6 +28,8 @@ public final class MetricsConstant {
      */
     public static final String NONE = "none";
 
+    public static final String DEFAULT_LOG_LEVEL = "INFO";
+
     /**
      * Default message prefix used when logging metrics.
      */
@@ -74,6 +76,8 @@ public final class MetricsConstant {
     public static final String ROOT_ERROR = "rootError";
 
     public static final String ERROR_METRICS = "ERROR";
+
+    public static final String LEVEL = "LEVEL";
 
 
     /**

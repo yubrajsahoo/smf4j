@@ -108,7 +108,7 @@ public class TimerAspect {
             error = e;
             throw e;
         } finally {
-            if (sample != null) {
+            if (sample != null || !timer.enable()) {
                 try {
                     StandardEvaluationContext context = SpelContextBuilder.buildContext(
                             joinPoint, result, error, beanResolver);

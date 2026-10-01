@@ -20,7 +20,9 @@ package io.github.yubrajsahoo.smf4j.engine.service.impl;
 
 import io.github.yubrajsahoo.smf4j.api.annotation.Counter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
+import io.github.yubrajsahoo.smf4j.api.domain.Metrics;
 import io.github.yubrajsahoo.smf4j.api.domain.Tag;
+import io.github.yubrajsahoo.smf4j.api.enums.LogLevel;
 import io.github.yubrajsahoo.smf4j.api.enums.MetricsType;
 import io.github.yubrajsahoo.smf4j.core.factory.MeterFactory;
 import io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger;
@@ -75,5 +77,31 @@ public class CounterMetricsService extends MetricsService {
         } catch (Exception exception) {
             log.error("Error while recording counter metric '{}': {}", counter.name(), exception.getMessage(), exception);
         }
+    }
+
+    /**
+     * Records a counter metric using the provided metrics data and log level.
+     * <p>
+     * This method logs the metrics using the configured {@link MetricsLogger} at the specified {@link LogLevel}.
+     * If the metric is enabled, it delegates the actual recording of the metric to the appropriate
+     * {@link io.github.yubrajsahoo.smf4j.core.service.MeterService} obtained from the {@link MeterFactory}
+     * for the {@link MetricsType#COUNTER}.
+     * </p>
+     *
+     * @param metrics the metrics data to be recorded
+     * @param level   the log level at which the metrics should be logged
+     */
+    public void recordCounter(Metrics metrics, LogLevel level) {
+        metricsLogger.log(metrics, level);
+
+        if (!metrics.isEnable()) {
+            return;
+        }
+
+        meterFactory.getMeterService(MetricsType.COUNTER)
+                .ifPresentOrElse(
+                        meterService -> meterService.recordMetrics(metrics),
+                        () -> log.warn("No MeterService found for metrics type: {}", MetricsType.COUNTER)
+                );
     }
 }

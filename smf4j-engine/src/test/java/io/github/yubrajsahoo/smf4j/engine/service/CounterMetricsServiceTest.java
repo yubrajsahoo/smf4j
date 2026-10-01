@@ -21,12 +21,12 @@ package io.github.yubrajsahoo.smf4j.engine.service;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import config.Smf4jEngineTestConfiguration;
 import helper.JsonConverter;
 import io.github.yubrajsahoo.smf4j.api.domain.CounterMetrics;
 import io.github.yubrajsahoo.smf4j.api.domain.TimerMetrics;
 import io.github.yubrajsahoo.smf4j.api.enums.MetricsType;
 import io.github.yubrajsahoo.smf4j.core.service.impl.CounterMeterService;
-import io.github.yubrajsahoo.smf4j.engine.Smf4jEngineTestAutoConfiguration;
 import io.github.yubrajsahoo.smf4j.engine.service.impl.CounterMetricsService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Meter;
@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DisplayName("CounterMeterService Unit Test")
-@SpringBootTest(classes = Smf4jEngineTestAutoConfiguration.class)
+@SpringBootTest(classes = Smf4jEngineTestConfiguration.class)
 @org.springframework.test.annotation.DirtiesContext(classMode = org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CounterMetricsServiceTest {
     @Autowired
@@ -57,7 +57,7 @@ class CounterMetricsServiceTest {
     @BeforeEach
     void setUp() {
         meterRegistry.clear();
-        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger.class);
         listAppender = new ListAppender<>();
         listAppender.start();
         logger.addAppender(listAppender);
@@ -65,7 +65,7 @@ class CounterMetricsServiceTest {
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.MetricsLogger.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(io.github.yubrajsahoo.smf4j.core.logger.impl.DefaultMetricsLogger.class);
         logger.detachAppender(listAppender);
         listAppender.clearAllFilters();
     }
@@ -137,5 +137,46 @@ class CounterMetricsServiceTest {
         String formattedMessage = listAppender.list.get(0).getFormattedMessage();
         String expectedMessage = "Metrics Logs For With->name=test.happy.counter->description=none->increment=1";
         assertEquals(expectedMessage, formattedMessage);
+    }
+
+    @Test
+    @DisplayName("recordCounter with Metrics should log and delegate to MeterService when enabled")
+    void recordCounter_withEnabledMetrics() {
+        CounterMetrics metrics = CounterMetrics.builder()
+                .name("test.enabled.metrics")
+                .description("enabled test")
+                .enable(true)
+                .increment(2)
+                .tags(java.util.Collections.emptyList())
+                .build();
+
+        counterMetricsService.recordCounter(metrics, io.github.yubrajsahoo.smf4j.api.enums.LogLevel.INFO);
+
+        Counter recordedCounter = meterRegistry.find("test.enabled.metrics").counter();
+        assertNotNull(recordedCounter);
+        assertEquals(2.0, recordedCounter.count());
+
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        Assertions.assertTrue(formattedMessage.contains("test.enabled.metrics"));
+    }
+
+    @Test
+    @DisplayName("recordCounter with Metrics should log and return when disabled")
+    void recordCounter_withDisabledMetrics() {
+        CounterMetrics metrics = CounterMetrics.builder()
+                .name("test.disabled.metrics")
+                .description("disabled test")
+                .enable(false)
+                .increment(1)
+                .tags(java.util.Collections.emptyList())
+                .build();
+
+        counterMetricsService.recordCounter(metrics, io.github.yubrajsahoo.smf4j.api.enums.LogLevel.INFO);
+
+        Counter recordedCounter = meterRegistry.find("test.disabled.metrics").counter();
+        Assertions.assertNull(recordedCounter);
+
+        String formattedMessage = listAppender.list.get(0).getFormattedMessage();
+        Assertions.assertTrue(formattedMessage.contains("test.disabled.metrics"));
     }
 }

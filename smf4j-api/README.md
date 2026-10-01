@@ -13,7 +13,7 @@ The `smf4j-api` module provides the core annotations and domain models for the S
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-api</artifactId>
-    <version>${smf4j.version}</version>
+    <version>0.0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
 </dependency>
 ```
 
@@ -43,7 +43,8 @@ public class OrderService {
 This module is typically used as a dependency in projects that need to define metrics using annotations. The actual processing and recording of metrics are handled by the `smf4j-engine` and `smf4j-core` modules.
 
 ## Build Commands
-Run from the root of the project to build this module:
+Run from the root of the project to build this module (Fast Install):
 ```bash
-./mvnw clean install -pl smf4j-api
+./mvnw clean install -pl smf4j-api -DskipTests -Djacoco.skip=true -Dpitest.skip=true -Dsonar.skip=true
 ```
+For other types of builds (tests, mutation coverage, sonar analysis), please refer to the [Root README](../README.md#building-the-library).

@@ -14,7 +14,7 @@ The `smf4j-core` module acts as the bridge between SMF4J and the underlying metr
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-core</artifactId>
-    <version>${smf4j.version}</version>
+    <version>0.0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
 </dependency>
 ```
 
@@ -38,7 +38,8 @@ public class CustomMetricPublisher {
 ```
 
 ## Build Commands
-Run from the root of the project to build this module:
+Run from the root of the project to build this module (Fast Install):
 ```bash
-./mvnw clean install -pl smf4j-core
+./mvnw clean install -pl smf4j-core -DskipTests -Djacoco.skip=true -Dpitest.skip=true -Dsonar.skip=true
 ```
+For other types of builds (tests, mutation coverage, sonar analysis), please refer to the [Root README](../README.md#building-the-library).

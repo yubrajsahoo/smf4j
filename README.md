@@ -69,25 +69,40 @@ public int getActiveSessions() { ... }
 
 ## Detailed Documentation
 
-For a comprehensive guide, including detailed SpEL context examples, programmatic metrics setup, and full architecture overview, please visit the **[Official SMF4J Documentation Website](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**. You can also refer to the local **[DOCUMENTATION.md](./DOCUMENTATION.md)** for offline reading.
+For a comprehensive guide, including detailed SpEL context examples, programmatic metrics setup, and full architecture overview, please visit the **[Official SMF4J Documentation Website](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**.
 
 ## Building the Library
 
-To build the library locally, run the following Maven wrapper command from the root directory:
+Here are the different Maven commands you can run from the root directory depending on your needs:
 
+### 1. Fast Install (Skip Tests, JaCoCo, PiTest, and Sonar)
+Quickly compile and install the library into your local Maven repository without running tests or analysis:
 ```bash
-# Clean, compile, and install the library into your local Maven repository
-./mvnw clean install
+./mvnw clean install -DskipTests -Djacoco.skip=true -Dpitest.skip=true -Dsonar.skip=true
 ```
 
-To run the test suite and verify code coverage:
+### 2. Full Install with Sonar Analysis
+Install and run the full suite (Tests, JaCoCo, PiTest) including SonarCloud analysis (requires token):
 ```bash
-./mvnw clean test
+./mvnw clean install -DSONAR_TOKEN=your_sonar_token
 ```
 
-To run mutation testing and verification:
+### 3. Run Tests and JaCoCo Coverage Only
+Run unit tests and generate JaCoCo code coverage reports:
 ```bash
-./mvnw clean verify -P pitest
+./mvnw clean test -Dpitest.skip=true -Dsonar.skip=true
+```
+
+### 4. Run PiTest (Mutation Testing) Only
+Run unit tests and PiTest mutation coverage without Sonar analysis:
+```bash
+./mvnw clean verify -Dsonar.skip=true
+```
+
+### 5. Run PiTest with Sonar Token Option
+Run tests, PiTest mutation coverage, and Sonar analysis together:
+```bash
+./mvnw clean verify -DSONAR_TOKEN=your_sonar_token
 ```
 
 ## License

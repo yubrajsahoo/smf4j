@@ -15,6 +15,10 @@
     <description>Starter for SMF4J (Simple Metrics Facade for Java) in Spring Boot</description>
     <url>http://maven.apache.org</url>
 
+    <properties>
+        <sonar.projectKey>yubrajsahoo_smf4j-spring-boot-starter</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <!-- Bring in the engine, which brings in core and api -->
         <dependency>

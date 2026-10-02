@@ -51,6 +51,7 @@
         <module>smf4j-core</module>
         <module>smf4j-engine</module>
         <module>smf4j-spring-boot-starter</module>
+        <module>smf4j-benchmark</module>
     </modules>
 
     <!-- Global dependencies common to all modules (usually test deps or very common APIs) -->

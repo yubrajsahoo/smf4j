@@ -1,0 +1,4 @@
+* text=auto
+*.mvnw eol=lf
+mvnw eol=lf export-ignore
+.mvn/** export-ignore

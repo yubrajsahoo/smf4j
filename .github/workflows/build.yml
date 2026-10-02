@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
     - uses: actions/checkout@v4
@@ -29,6 +31,4 @@ jobs:
     - name: Analyze with SonarCloud
       # Only run SonarCloud analysis if the token is available (e.g., not on forks)
       if: env.SONAR_TOKEN != ''
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: ./mvnw -B sonar:sonar -Dsonar.projectKey=yubrajsahoo_smf4j -Dsonar.organization=yubrajsahoo -Dsonar.host.url=https://sonarcloud.io

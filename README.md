@@ -1,17 +1,23 @@
 # SMF4J - Simple Metrics Facade for Java
 
-📖 **[Official Documentation](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**
+[![Build and Test](https://github.com/yubrajsahoo/smf4j/actions/workflows/build.yml/badge.svg)](https://github.com/yubrajsahoo/smf4j/actions/workflows/build.yml)
+[![Publish to Maven Central](https://github.com/yubrajsahoo/smf4j/actions/workflows/publish.yml/badge.svg)](https://github.com/yubrajsahoo/smf4j/actions/workflows/publish.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.yubrajsahoo/smf4j-spring-boot-starter.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.yubrajsahoo/smf4j-spring-boot-starter)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+📘 **[Official Documentation](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**
 
 **SMF4J (Simple Metrics Facade for Java)** is a lightweight library designed to simplify the collection and publishing of metrics in Java applications, particularly those using Spring Boot and Micrometer. It provides easy-to-use annotations like `@Counter`, `@Timer`, and `@Gauge` with support for dynamic tag evaluation using Spring Expression Language (SpEL).
 
 ## Modules
 
-The project is structured into four main modules:
+The project is structured into five main modules:
 
 * **[smf4j-api](smf4j-api/README.md):** Contains the core annotations (`@Counter`, `@Timer`, `@Gauge`, `@Tags`) and domain models.
 * **[smf4j-core](smf4j-core/README.md):** Provides the core metric services and integration with Micrometer.
 * **[smf4j-engine](smf4j-engine/README.md):** Contains Spring AOP aspects and the SpEL evaluation engine to process annotations at runtime.
 * **[smf4j-spring-boot-starter](smf4j-spring-boot-starter/README.md):** The all-in-one dependency for Spring Boot applications to easily auto-configure everything.
+* **[smf4j-benchmark](smf4j-benchmark/README.md):** Gatling and JMH benchmarks to validate the library's negligible performance overhead.
 
 ## Key Features
 
@@ -28,7 +34,7 @@ If you are using Spring Boot, add the starter dependency to your `pom.xml`:
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-spring-boot-starter</artifactId>
-    <version>0.0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
+    <version>0.0.1</version>
 </dependency>
 ```
 *Note: The starter transitively pulls in all required modules (`api`, `core`, and `engine`) and seamlessly connects to your Spring Boot auto-configuration.*
@@ -67,19 +73,58 @@ Track the size of a cache or the number of active users currently logged in.
 public int getActiveSessions() { ... }
 ```
 
+### 4. Programmatic Metric Logging (`LogMetrics`)
+If you need to log metrics explicitly without using annotations (e.g., within complex logic blocks or catch clauses), you can use the `LogMetrics` utility class. It provides static methods to record counter metrics dynamically at various log levels.
+
+```java
+import io.github.yubrajsahoo.smf4j.engine.utils.LogMetrics;
+
+public void processPayment(Payment payment) {
+    try {
+        // ... payment processing logic ...
+        LogMetrics.info("payment.processed", "Payment processed successfully", true, 
+            "status", "success", "currency", payment.getCurrency());
+    } catch (Exception e) {
+        // Log an error metric programmatically
+        LogMetrics.error("payment.processed", "Payment processing failed", true, 
+            "status", "failed", "currency", payment.getCurrency(), "error_type", e.getClass().getSimpleName());
+    }
+}
+```
+*You can also omit the name and description arguments to use the defaults configured via `smf4j.log-metrics.name`.*
+
 ## Configuration
 
-You can configure SMF4J using `application.properties` or `application.yml` in your Spring Boot application.
+You can customize SMF4J's behavior globally and set default metadata for your metrics using `application.properties` or `application.yml` in your Spring Boot application.
 
-```properties
-# Default log metrics properties
-smf4j.log-metrics.name=smf4j.log.metrics
-smf4j.log-metrics.description=none
+```yaml
+smf4j:
+  # Enable or disable the entire SMF4J library (default: true)
+  enabled: true
+  
+  # Configuration for metrics logged via LogMetrics without explicit names
+  log-metrics:
+    enabled: true
+    name: "smf4j.log.metrics"     # Default name
+    description: "none"           # Default description
+    
+  # Configuration for the console output logger behavior
+  logger-config:
+    log-level: INFO                               # Level at which metrics are logged
+    log-message: "Metrics Logs For With->"        # Log prefix for enabled metrics
+    disable-log-level: DEBUG                      # Level at which disabled metrics are logged
+    disable-log-message: "Metrics Disabled For->" # Log prefix for disabled metrics
 ```
 
 ## Detailed Documentation
 
 For a comprehensive guide, including detailed SpEL context examples, programmatic metrics setup, and full architecture overview, please visit the **[Official SMF4J Documentation Website](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**.
+
+## CI/CD Pipeline
+
+The project features automated CI/CD workflows using GitHub Actions:
+- **Build and Test:** Triggers on pushes/PRs to `main` branch. Validates code compilation, unit tests, and posts SonarCloud analysis metrics.
+- **Maven Central Release:** Triggers automatically whenever a new GitHub Release is created. Signs artifacts with GPG and publishes them seamlessly to Sonatype Maven Central.
 
 ## Building the Library
 

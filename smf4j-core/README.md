@@ -14,7 +14,7 @@ The `smf4j-core` module acts as the bridge between SMF4J and the underlying metr
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-core</artifactId>
-    <version>0.0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
+    <version>0.0.1</version> <!-- Replace with the latest release -->
 </dependency>
 ```
 

@@ -1,25 +1,26 @@
 # smf4j-api
 
-The `smf4j-api` module provides the core annotations and domain models for the SMF4J library. It is a lightweight API module that defines the contract for metrics collection without pulling in heavy implementations, making it perfect to include in interfaces or client libraries without bloating them.
+The smf4j-api module provides the core annotations and domain models for the SMF4J library. It is a lightweight API module that defines the contract for metrics collection without pulling in heavy implementations, making it perfect to include in interfaces or client libraries without bloating them.
 
 ## Features
 
-* **Annotations:** Contains `@Counter`, `@Timer`, `@Gauge`, and `@Tags` annotations for declarative metrics tracking.
+* **Annotations:** Contains @Counter, @Timer, @Gauge, and @Tags annotations for declarative metrics tracking.
 * **Domain Models:** Defines the core data structures used by SMF4J to represent metric information.
+* **Configuration Properties:** Exposes property classes (Smf4JProperties, LogMetricsProperties, LoggerConfigProperties) that govern how metrics and logs are handled and formatted.
 
 ## Installation
 
-```xml
+`xml
 <dependency>
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version> <!-- Replace with the latest release -->
+    <version>0.0.1</version>
 </dependency>
-```
+`
 
 ## Usage Example
 
-```java
+`java
 import io.github.yubrajsahoo.smf4j.api.annotation.Counter;
 import io.github.yubrajsahoo.smf4j.api.annotation.Tags;
 
@@ -38,13 +39,13 @@ public class OrderService {
         return order;
     }
 }
-```
+`
 
-This module is typically used as a dependency in projects that need to define metrics using annotations. The actual processing and recording of metrics are handled by the `smf4j-engine` and `smf4j-core` modules.
+This module is typically used as a dependency in projects that need to define metrics using annotations. The actual processing and recording of metrics are handled by the smf4j-engine and smf4j-core modules.
 
 ## Build Commands
 Run from the root of the project to build this module (Fast Install):
-```bash
+`ash
 ./mvnw clean install -pl smf4j-api -DskipTests -Djacoco.skip=true -Dpitest.skip=true -Dsonar.skip=true
-```
+`
 For other types of builds (tests, mutation coverage, sonar analysis), please refer to the [Root README](../README.md#building-the-library).

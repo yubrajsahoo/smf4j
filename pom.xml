@@ -65,6 +65,8 @@
 
         <!-- Disable testCompileSourceRoots warning -->
         <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
+
+        <central.skipPublishing>false</central.skipPublishing>
     </properties>
 
     <!-- Define modules here when you create them -->
@@ -276,6 +278,7 @@
                             <publishingServerId>central</publishingServerId>
                             <tokenAuth>true</tokenAuth>
                             <autoPublish>true</autoPublish>
+                            <skipPublishing>${central.skipPublishing}</skipPublishing>
                         </configuration>
                     </plugin>
                 </plugins>

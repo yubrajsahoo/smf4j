@@ -6,13 +6,15 @@
     <parent>
         <groupId>io.github.yubrajsahoo</groupId>
         <artifactId>smf4j</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
 
     <artifactId>smf4j-benchmark</artifactId>
     <description>Benchmark and load test application for SMF4J</description>
 
     <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+
         <jmh.version>1.37</jmh.version>
         <gatling.version>3.11.5</gatling.version>
         <sonar.skip>true</sonar.skip>

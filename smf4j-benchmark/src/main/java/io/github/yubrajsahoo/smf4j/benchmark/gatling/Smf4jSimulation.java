@@ -9,6 +9,9 @@ import java.time.Duration;
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.*;
 
+/**
+ * Gatling Simulation for testing SMF4J API overhead.
+ */
 public class Smf4jSimulation extends Simulation {
 
     HttpProtocolBuilder httpProtocol = http
@@ -27,6 +30,9 @@ public class Smf4jSimulation extends Simulation {
     ScenarioBuilder scnGauge = scenario("Gauge Scenario")
             .exec(http("request_gauge").get("/api/target/gauge"));
 
+    /**
+     * Constructs a new Smf4jSimulation and sets up the Gatling scenarios.
+     */
     public Smf4jSimulation() {
         setUp(
                 scnNoMetrics.injectOpen(constantUsersPerSec(50).during(Duration.ofSeconds(10))),

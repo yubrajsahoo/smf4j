@@ -57,6 +57,7 @@ public enum LogLevel {
      * or null log level is provided, it defaults to the INFO level.
      * </p>
      *
+     * @param logger  the logger to use
      * @param level   the target log level (e.g., "DEBUG", "INFO", "WARN", "ERROR")
      * @param message the formatted metric message to be logged
      */

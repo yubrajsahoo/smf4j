@@ -28,6 +28,9 @@ public final class MetricsConstant {
      */
     public static final String NONE = "none";
 
+    /**
+     * Default log level for metrics.
+     */
     public static final String DEFAULT_LOG_LEVEL = "INFO";
 
     /**
@@ -75,8 +78,14 @@ public final class MetricsConstant {
      */
     public static final String ROOT_ERROR = "rootError";
 
+    /**
+     * Constant representing an error metric.
+     */
     public static final String ERROR_METRICS = "ERROR";
 
+    /**
+     * Constant representing the log level metric tag.
+     */
     public static final String LEVEL = "LEVEL";
 
 

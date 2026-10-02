@@ -35,6 +35,13 @@ import io.github.yubrajsahoo.smf4j.api.enums.LogLevel;
 public abstract class MetricsLogger {
 
     /**
+     * Default constructor for {@link MetricsLogger}.
+     */
+    protected MetricsLogger() {
+        // Default constructor
+    }
+
+    /**
      * Logs the details of a recorded {@link Metrics}.
      *
      * @param metrics the metric data to log

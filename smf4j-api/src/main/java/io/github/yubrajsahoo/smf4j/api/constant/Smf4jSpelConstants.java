@@ -1,5 +1,8 @@
 package io.github.yubrajsahoo.smf4j.api.constant;
 
+/**
+ * Constants for predefined SpEL expressions commonly used in metric tags.
+ */
 public final class Smf4jSpelConstants {
     private Smf4jSpelConstants() {
         //private constructure

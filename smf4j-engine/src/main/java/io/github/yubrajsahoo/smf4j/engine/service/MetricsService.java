@@ -97,7 +97,7 @@ public abstract class MetricsService {
     /**
      * Evaluates tag expressions defined in annotations against the given SpEL evaluation context.
      *
-     * @param tags    the array of {@link io.github.yubrajsahoo.smf4jcore.core.annotation.Tags} to evaluate
+     * @param tags    the array of {@link Tags} to evaluate
      * @param context the SpEL evaluation context
      * @return the evaluated Micrometer {@link Tags}
      */

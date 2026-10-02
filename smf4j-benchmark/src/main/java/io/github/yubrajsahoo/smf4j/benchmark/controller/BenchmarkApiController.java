@@ -22,15 +22,26 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/benchmark")
+/**
+ * API Controller.
+ */
 public class BenchmarkApiController {
 
     private final GithubReportService githubReportService;
 
+    /**
+     * Constructor.
+     * @param githubReportService service
+     */
     public BenchmarkApiController(GithubReportService githubReportService) {
         this.githubReportService = githubReportService;
     }
 
     @PostMapping("/jmh")
+    /**
+     * Run JMH benchmark.
+     * @return response entity
+     */
     public ResponseEntity<Map<String, String>> runJmhBenchmark() {
         Map<String, String> response = new HashMap<>();
         try {
@@ -74,6 +85,10 @@ public class BenchmarkApiController {
     }
 
     @PostMapping("/gatling")
+    /**
+     * Run Gatling benchmark.
+     * @return response entity
+     */
     public ResponseEntity<Map<String, String>> runGatlingBenchmark() {
         Map<String, String> response = new HashMap<>();
         try {
@@ -136,6 +151,11 @@ public class BenchmarkApiController {
     }
 
     @GetMapping("/github/report")
+    /**
+     * Get report from Github.
+     * @param fileName the file name
+     * @return response entity
+     */
     public ResponseEntity<String> getReportFromGithub(@RequestParam(name = "fileName", defaultValue = BenchmarkConstants.JMH_RESULT_FILE_NAME) String fileName) {
         try {
             String content = githubReportService.getReportFromGithub(fileName);

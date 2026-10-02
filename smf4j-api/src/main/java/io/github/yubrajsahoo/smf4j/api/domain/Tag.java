@@ -47,22 +47,49 @@ public class Tag {
         this.value = value;
     }
 
+    /**
+     * Creates a new Tag instance.
+     *
+     * @param key   the tag key
+     * @param value the tag value
+     * @return a new Tag instance
+     */
     public static Tag of(String key, String value) {
         return new Tag(key, value);
     }
 
+    /**
+     * Gets the key of the tag.
+     *
+     * @return the tag key
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * Sets the key of the tag.
+     *
+     * @param key the tag key to set
+     */
     public void setKey(String key) {
         this.key = key;
     }
 
+    /**
+     * Gets the value of the tag.
+     *
+     * @return the tag value
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * Sets the value of the tag.
+     *
+     * @param value the tag value to set
+     */
     public void setValue(String value) {
         this.value = value;
     }

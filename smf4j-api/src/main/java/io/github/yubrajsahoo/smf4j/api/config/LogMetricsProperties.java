@@ -11,6 +11,13 @@ package io.github.yubrajsahoo.smf4j.api.config;
 public class LogMetricsProperties {
 
     /**
+     * Default constructor for {@link LogMetricsProperties}.
+     */
+    public LogMetricsProperties() {
+        // Default constructor
+    }
+
+    /**
      * Constant representing an empty or disabled description.
      */
     public static final String NONE = "none";
@@ -29,10 +36,20 @@ public class LogMetricsProperties {
      */
     private String description = NONE;
 
+    /**
+     * Checks if the log metrics are enabled.
+     *
+     * @return true if enabled, false otherwise
+     */
     public boolean isEnabled() {
         return enabled;
     }
 
+    /**
+     * Sets whether the log metrics are enabled.
+     *
+     * @param enabled true to enable, false to disable
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

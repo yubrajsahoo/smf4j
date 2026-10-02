@@ -22,6 +22,13 @@ package io.github.yubrajsahoo.smf4j.api.config;
 public class LoggerConfigProperties {
 
     /**
+     * Default constructor for {@link LoggerConfigProperties}.
+     */
+    public LoggerConfigProperties() {
+        // Default constructor
+    }
+
+    /**
      * Default log level used when logging metrics.
      */
     public static final String DEFAULT_LOG_LEVEL = "INFO";

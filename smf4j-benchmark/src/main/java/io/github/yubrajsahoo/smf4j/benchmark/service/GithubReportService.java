@@ -6,17 +6,27 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.Path;
 
+/**
+ * Service to manage uploading and fetching benchmark reports from GitHub.
+ */
 @Service
 public class GithubReportService {
 
     private final RestTemplate restTemplate;
 
+    /**
+     * Constructs a new GithubReportService.
+     */
     public GithubReportService() {
         this.restTemplate = new RestTemplate();
     }
 
     /**
      * Commits and pushes the generated report using the local git repository.
+     *
+     * @param repoDir       the repository directory path
+     * @param commitMessage the commit message to use
+     * @throws Exception if an error occurs during git operations
      */
     public void uploadReport(Path repoDir, String commitMessage) throws Exception {
         runCommand(repoDir, "git", "add", ".");

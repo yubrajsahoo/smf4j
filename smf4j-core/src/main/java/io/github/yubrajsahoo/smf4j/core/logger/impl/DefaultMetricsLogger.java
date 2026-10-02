@@ -38,6 +38,11 @@ public class DefaultMetricsLogger extends MetricsLogger {
 
     private final LoggerConfigProperties metricsProperties;
 
+    /**
+     * Constructs a new {@link DefaultMetricsLogger} with the given configuration properties.
+     *
+     * @param loggerConfigProperties the configuration properties for the logger
+     */
     public DefaultMetricsLogger(LoggerConfigProperties loggerConfigProperties) {
         this.metricsProperties = loggerConfigProperties;
     }

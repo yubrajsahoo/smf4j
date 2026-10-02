@@ -12,6 +12,13 @@ package io.github.yubrajsahoo.smf4j.api.config;
 public class Smf4JProperties {
 
     /**
+     * Default constructor for {@link Smf4JProperties}.
+     */
+    public Smf4JProperties() {
+        // Default constructor
+    }
+
+    /**
      * Properties related to log metric definitions (name and description).
      */
     private LogMetricsProperties logMetrics = new LogMetricsProperties();

@@ -13,22 +13,28 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Grant execute permission for mvnw
-      run: chmod +x ./mvnw
-        
-    - name: Build with Maven
-      run: ./mvnw -B clean verify
-      
-    - name: Analyze with SonarCloud
-      # Only run SonarCloud analysis if the token is available (e.g., not on forks)
-      if: env.SONAR_TOKEN != ''
-      run: ./mvnw -B sonar:sonar -Dsonar.projectKey=yubrajsahoo_smf4j -Dsonar.organization=yubrajsahoo -Dsonar.host.url=https://sonarcloud.io
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Grant execute permission for mvnw
+        run: chmod +x ./mvnw
+
+      - name: Run Build, Tests, JaCoCo, PiTest, and SonarCloud
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
+            ./mvnw -B clean verify -Dsonar.projectKey=yubrajsahoo_smf4j -Dsonar.organization=yubrajsahoo -Dsonar.host.url=https://sonarcloud.io -DSONAR_TOKEN=${{ secrets.SONAR_TOKEN }}
+          else
+            echo "SONAR_TOKEN is not set, skipping SonarCloud analysis."
+            ./mvnw -B clean verify -Dsonar.skip=true
+          fi

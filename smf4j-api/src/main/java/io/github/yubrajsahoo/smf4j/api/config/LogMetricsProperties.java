@@ -15,6 +15,8 @@ public class LogMetricsProperties {
      */
     public static final String NONE = "none";
 
+    private boolean enabled = true;
+
     /**
      * The name assigned to the log metrics.
      * Default is {@code "smf4j.log.metrics"}.
@@ -26,6 +28,14 @@ public class LogMetricsProperties {
      * Default is {@value #NONE}.
      */
     private String description = NONE;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     /**
      * Retrieves the name of the log metrics.

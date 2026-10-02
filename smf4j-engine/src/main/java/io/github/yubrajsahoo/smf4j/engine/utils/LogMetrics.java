@@ -180,7 +180,11 @@ public class LogMetrics {
      * @param tags        key-value pairs of tags as strings
      */
     public static void log(String name, String description, boolean enabled, LogLevel level, String... tags) {
-        Metrics metrics = buildCounter(level, name, description, enabled, tags);
+        boolean isEnabled = enabled;
+        if (properties != null && !properties.isEnabled()) {
+            isEnabled = false;
+        }
+        Metrics metrics = buildCounter(level, name, description, isEnabled, tags);
         metricsService.recordCounter(metrics, level);
     }
 

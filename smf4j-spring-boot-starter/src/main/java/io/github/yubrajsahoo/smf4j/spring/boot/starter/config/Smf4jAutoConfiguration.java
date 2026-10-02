@@ -31,8 +31,11 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.util.List;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
 @AutoConfiguration
 @EnableConfigurationProperties
+@ConditionalOnProperty(prefix = "smf4j", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class Smf4jAutoConfiguration {
 
     @Bean

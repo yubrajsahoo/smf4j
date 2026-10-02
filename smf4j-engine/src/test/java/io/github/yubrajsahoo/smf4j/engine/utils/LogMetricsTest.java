@@ -162,6 +162,22 @@ class LogMetricsTest {
     }
 
     @Test
+    @DisplayName("Should disable metrics if properties isEnabled is false")
+    void testPropertiesDisabled() {
+        io.github.yubrajsahoo.smf4j.api.config.LogMetricsProperties properties = new io.github.yubrajsahoo.smf4j.api.config.LogMetricsProperties();
+        properties.setEnabled(false);
+        new LogMetrics(metricsService, properties);
+
+        LogMetrics.info("test.metric", "Test Description", true);
+
+        ArgumentCaptor<Metrics> metricsCaptor = ArgumentCaptor.forClass(Metrics.class);
+        verify(metricsService).recordCounter(metricsCaptor.capture(), eq(LogLevel.INFO));
+
+        Metrics capturedMetrics = metricsCaptor.getValue();
+        assertFalse(capturedMetrics.isEnable());
+    }
+
+    @Test
     @DisplayName("Should handle null tags gracefully")
     void handleNullTags() {
         LogMetrics.log("test", "test", true, LogLevel.INFO, (String[]) null);

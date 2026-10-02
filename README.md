@@ -120,11 +120,29 @@ smf4j:
 
 For a comprehensive guide, including detailed SpEL context examples, programmatic metrics setup, and full architecture overview, please visit the **[Official SMF4J Documentation Website](https://yubrajsahoo.github.io/smf4j-documentation-ui/)**.
 
-## CI/CD Pipeline
+## CI/CD Pipeline (GitHub Actions)
 
-The project features automated CI/CD workflows using GitHub Actions:
-- **Build and Test:** Triggers on pushes/PRs to `main` branch. Validates code compilation, unit tests, and posts SonarCloud analysis metrics.
-- **Maven Central Release:** Triggers automatically whenever a new GitHub Release is created. Signs artifacts with GPG and publishes them seamlessly to Sonatype Maven Central.
+The project features automated CI/CD workflows using GitHub Actions.
+
+### 1. How to Build & Test
+The **Build and Test** workflow validates code compilation, runs unit tests, generates JaCoCo coverage reports, and posts SonarCloud analysis metrics. 
+
+**To trigger a build:**
+- **Automatically:** Simply push your code to the `main` branch or open a Pull Request against it. The workflow will run instantly.
+- **Manually:** Go to the **Actions** tab on GitHub -> Click **Build and Test** -> Click the **Run workflow** dropdown -> Click **Run workflow**.
+
+### 2. How to Deploy to Maven Central
+The **Publish to Maven Central** workflow automatically signs your `.jar` artifacts with GPG and publishes them seamlessly to Sonatype Maven Central. 
+
+**To trigger a deployment:**
+1. Navigate to the main page of your repository on GitHub.
+2. On the right side of the screen, click on **Releases**.
+3. Click the **Draft a new release** button.
+4. Click **Choose a tag** and type your new version number (e.g., `v0.0.1`), then click **Create new tag**.
+5. Fill in the Release Title and describe the changes.
+6. Click **Publish release**.
+
+*Once published, GitHub Actions will immediately pick up the release event and start the deployment process to Maven Central!*
 
 ## Building the Library
 

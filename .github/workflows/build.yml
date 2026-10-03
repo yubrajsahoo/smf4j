@@ -34,4 +34,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed for PR decoration
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Pulls the secret from GitHub
-        run: mvn clean verify sonar:sonar
+        run: |
+          mvn clean verify sonar:sonar \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}

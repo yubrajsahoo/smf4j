@@ -28,6 +28,8 @@ The project is structured into five main modules:
 
 ## Installation
 
+**Maven Central:** [https://central.sonatype.com/artifact/io.github.yubrajsahoo/smf4j-spring-boot-starter](https://central.sonatype.com/artifact/io.github.yubrajsahoo/smf4j-spring-boot-starter)
+
 If you are using Spring Boot, add the starter dependency to your `pom.xml`:
 
 ```xml

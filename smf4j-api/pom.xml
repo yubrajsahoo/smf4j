@@ -15,6 +15,5 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.projectKey>yubrajsahoo_smf4j-api</sonar.projectKey>
     </properties>
 </project>

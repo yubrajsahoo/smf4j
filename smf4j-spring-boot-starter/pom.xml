@@ -16,7 +16,6 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <sonar.projectKey>yubrajsahoo_smf4j-spring-boot-starter</sonar.projectKey>
     </properties>
 
     <dependencies>

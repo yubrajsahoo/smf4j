@@ -4,7 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Adjust the groupId based on your preference -->
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j</artifactId>
     <version>0.0.1</version>
@@ -17,7 +16,7 @@
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 
@@ -31,7 +30,7 @@
     <scm>
         <connection>scm:git:git://github.com/yubrajsahoo/smf4j.git</connection>
         <developerConnection>scm:git:ssh://github.com/yubrajsahoo/smf4j.git</developerConnection>
-        <url>http://github.com/yubrajsahoo/smf4j/tree/main</url>
+        <url>https://github.com/yubrajsahoo/smf4j/tree/main</url>
     </scm>
 
     <properties>
@@ -49,40 +48,44 @@
         <logback.version>1.5.19</logback.version>
         <jackson.version>2.21.4</jackson.version>
 
-        <!-- Test plugin versions -->
+        <!-- Quality plugin versions -->
         <jacoco.version>0.8.13</jacoco.version>
         <sonar.maven.plugin.version>5.0.0.4389</sonar.maven.plugin.version>
         <pitest.maven.version>1.25.9</pitest.maven.version>
         <pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
-        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
 
-        <!--    Sonar properties (resolved from .env locally, or -D flags in prod)    -->
+        <!-- Release plugin versions (check for newer releases) -->
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.10.1</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+        <central-publishing-plugin.version>0.7.0</central-publishing-plugin.version>
+
+        <!-- Sonar settings. The token is NOT set here: the scanner reads the
+             SONAR_TOKEN environment variable automatically (CI secret or local env). -->
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>yubrajsahoo</sonar.organization>
         <sonar.projectKey>yubrajsahoo_smf4j</sonar.projectKey>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.token>${SONAR_TOKEN}</sonar.token>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
 
-        <!-- Disable testCompileSourceRoots warning -->
         <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
     </properties>
 
-    <!-- Define modules here when you create them -->
     <modules>
         <module>smf4j-api</module>
         <module>smf4j-core</module>
         <module>smf4j-engine</module>
         <module>smf4j-spring-boot-starter</module>
+        <!-- Uncomment if the benchmark module should be part of the build.
+             It is excluded from Maven Central in the release profile below. -->
+        <!-- <module>smf4j-benchmark</module> -->
     </modules>
 
-    <!-- Global dependencies common to all modules (usually test deps or very common APIs) -->
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <!-- Standard test dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -95,13 +98,10 @@
             <version>${jackson.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
-    <!-- Common dependency management -->
     <dependencyManagement>
         <dependencies>
-            <!-- Spring Boot BOM -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -115,16 +115,23 @@
     <build>
         <pluginManagement>
             <plugins>
-                <!-- JaCoCo Plugin for Code Coverage -->
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.version}</version>
                 </plugin>
+                <!-- Version only. NOT bound to a phase: run explicitly with
+                     `mvn verify sonar:sonar` after all modules are built. -->
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar.maven.plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
+
         <plugins>
-            <!-- JaCoCo Plugin for Code Coverage -->
+            <!-- JaCoCo: coverage report + 80% gate on every build -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -169,67 +176,69 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>${sonar.maven.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sonar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.pitest</groupId>
-                <artifactId>pitest-maven</artifactId>
-                <version>${pitest.maven.version}</version>
-                <executions>
-                    <execution>
-                        <id>pitest</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>mutationCoverage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-junit5-plugin</artifactId>
-                        <version>${pitest.junit5.plugin.version}</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <targetClasses>
-                        <param>io.github.yubrajsahoo.smf4j.*</param>
-                    </targetClasses>
-                    <targetTests>
-                        <param>io.github.yubrajsahoo.smf4j.*</param>
-                    </targetTests>
-                    <mutationThreshold>80</mutationThreshold>
-                    <coverageThreshold>80</coverageThreshold>
-                    <jvmArgs>
-                        <value>-Xmx1024m</value>
-                        <value>-XX:+EnableDynamicAgentLoading</value>
-                    </jvmArgs>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
     <profiles>
+        <!-- ============================================================
+             quality: mutation testing. Use in CI: mvn verify -P quality
+             Kept out of the default build so releases stay fast.
+             ============================================================ -->
+        <profile>
+            <id>quality</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <version>${pitest.maven.version}</version>
+                        <executions>
+                            <execution>
+                                <id>pitest</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>mutationCoverage</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.pitest</groupId>
+                                <artifactId>pitest-junit5-plugin</artifactId>
+                                <version>${pitest.junit5.plugin.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <configuration>
+                            <targetClasses>
+                                <param>io.github.yubrajsahoo.smf4j.*</param>
+                            </targetClasses>
+                            <targetTests>
+                                <param>io.github.yubrajsahoo.smf4j.*</param>
+                            </targetTests>
+                            <mutationThreshold>80</mutationThreshold>
+                            <coverageThreshold>80</coverageThreshold>
+                            <jvmArgs>
+                                <value>-Xmx1024m</value>
+                                <value>-XX:+EnableDynamicAgentLoading</value>
+                            </jvmArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ============================================================
+             release: sources, javadoc, signing, upload to Maven Central.
+             Use: mvn -B deploy -P release
+             ============================================================ -->
         <profile>
             <id>release</id>
             <build>
                 <plugins>
-                    <!-- 1. Source Plugin -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.0</version>
+                        <version>${maven-source-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -238,11 +247,14 @@
                         </executions>
                     </plugin>
 
-                    <!-- 2. Javadoc Plugin -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.6.3</version>
+                        <version>${maven-javadoc-plugin.version}</version>
+                        <configuration>
+                            <!-- Don't fail the release on missing @param/@return tags -->
+                            <doclint>none</doclint>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -251,30 +263,40 @@
                         </executions>
                     </plugin>
 
-                    <!-- 3. GPG Plugin for Signing -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.7</version>
+                        <version>${maven-gpg-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
                                 <phase>verify</phase>
                                 <goals><goal>sign</goal></goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
 
-                    <!-- 4. Central Publishing Plugin -->
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.4.0</version>
+                        <version>${central-publishing-plugin.version}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
-                            <tokenAuth>true</tokenAuth>
-                            <autoPublish>true</autoPublish>
+                            <!-- First release: false = validate, then click Publish
+                                 in central.sonatype.com. Switch to true later. -->
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                            <!-- Never publish the benchmark module -->
+                            <excludeArtifacts>
+                                <artifact>smf4j-benchmark</artifact>
+                            </excludeArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>

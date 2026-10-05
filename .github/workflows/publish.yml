@@ -31,6 +31,6 @@ jobs:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         run: |
-          mvn clean deploy -DskipTests \
+          mvn clean deploy -P realise -DskipTests \
             -Dusername="${SONATYPE_USERNAME}" \
             -Dpassword="${SONATYPE_PASSWORD}"

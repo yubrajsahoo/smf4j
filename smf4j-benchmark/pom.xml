@@ -3,26 +3,31 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- Standalone app (NOT a module of the smf4j parent, NOT published to Maven Central).
+         Build the library first (mvn install at repo root), then:
+         mvn -f smf4j-benchmark/pom.xml package -->
     <groupId>io.github.yubrajsahoo</groupId>
     <artifactId>smf4j-benchmark</artifactId>
     <version>0.0.1</version>
+    <packaging>jar</packaging>
+
+    <name>smf4j-benchmark</name>
     <description>Benchmark and load test application for SMF4J</description>
 
     <properties>
         <java.version>17</java.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <smf4j.version>0.0.1</smf4j.version>
         <spring-boot.version>3.5.16</spring-boot.version>
-
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <central.skipPublishing>true</central.skipPublishing>
-
         <jmh.version>1.37</jmh.version>
         <gatling.version>3.11.5</gatling.version>
+
+        <!-- Never deployed anywhere; keep out of Sonar analysis -->
+        <maven.deploy.skip>true</maven.deploy.skip>
         <sonar.skip>true</sonar.skip>
-        <jacoco.skip>true</jacoco.skip>
-        <pitest.skip>true</pitest.skip>
     </properties>
 
     <dependencyManagement>
@@ -38,39 +43,31 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- SMF4J Starter to auto-configure aspects -->
+        <!-- SMF4J starter under test (from local install or Maven Central) -->
         <dependency>
             <groupId>io.github.yubrajsahoo</groupId>
             <artifactId>smf4j-spring-boot-starter</artifactId>
-            <version>${project.version}</version>
+            <version>${smf4j.version}</version>
         </dependency>
 
-        <!-- Spring Boot Web for UI and Endpoints -->
+        <!-- Web UI and endpoints (brings Jackson at compile scope) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
-        <!-- Spring Boot Thymeleaf for UI Templates -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
-        <!-- JMH Dependencies -->
+        <!-- JMH -->
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
             <version>${jmh.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
-            <version>${jmh.version}</version>
-            <scope>provided</scope>
-        </dependency>
 
-        <!-- Gatling Dependencies for Java -->
+        <!-- Gatling (Java DSL) -->
         <dependency>
             <groupId>io.gatling.highcharts</groupId>
             <artifactId>gatling-charts-highcharts</artifactId>
@@ -81,18 +78,26 @@
             <artifactId>gatling-app</artifactId>
             <version>${gatling.version}</version>
         </dependency>
-        
-        <!-- Fix Jackson scope overridden by parent pom -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Spring Boot Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <!-- Runs the JMH annotation processor to generate benchmark code -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.openjdk.jmh</groupId>
+                            <artifactId>jmh-generator-annprocess</artifactId>
+                            <version>${jmh.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -104,21 +109,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <!-- Compiler Plugin to ensure JMH annotation processor runs -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.openjdk.jmh</groupId>
-                            <artifactId>jmh-generator-annprocess</artifactId>
-                            <version>${jmh.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
             </plugin>
         </plugins>
     </build>

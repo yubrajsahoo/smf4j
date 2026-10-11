@@ -75,9 +75,6 @@
         <module>smf4j-core</module>
         <module>smf4j-engine</module>
         <module>smf4j-spring-boot-starter</module>
-        <!-- Uncomment if the benchmark module should be part of the build.
-             It is excluded from Maven Central in the release profile below. -->
-        <!-- <module>smf4j-benchmark</module> -->
     </modules>
 
     <dependencies>

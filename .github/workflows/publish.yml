@@ -1,6 +1,7 @@
 name: Publish Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'  # Trigger on tags like v1.0.0, v0.1.0-SNAPSHOT, etc.
@@ -19,6 +20,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
+          server-id: central
+          server-username: SONATYPE_USERNAME
+          server-password: SONATYPE_PASSWORD
 
       - name: Import GPG Key for Artifact Signing
         uses: crazy-max/ghaction-import-gpg@v6
@@ -31,6 +35,4 @@ jobs:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         run: |
-          mvn clean deploy -P realise -DskipTests \
-            -Dusername="${SONATYPE_USERNAME}" \
-            -Dpassword="${SONATYPE_PASSWORD}"
+          mvn clean deploy -P release -DskipTests

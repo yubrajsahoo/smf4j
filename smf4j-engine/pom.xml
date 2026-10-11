@@ -10,7 +10,8 @@
     <artifactId>smf4j-engine</artifactId>
 
     <name>smf4j-engine</name>
-    <url>http://maven.apache.org</url>
+    <description>Engine module of SMF4J - Simple Metrics Facade for Java</description>
+    <url>https://github.com/yubrajsahoo/smf4j</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

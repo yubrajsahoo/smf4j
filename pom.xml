@@ -58,7 +58,7 @@
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.10.1</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
-        <central-publishing-plugin.version>0.9.0</central-publishing-plugin.version>
+        <central-publishing-plugin.version>0.11.0</central-publishing-plugin.version>
 
         <!-- Sonar settings. The token is NOT set here: the scanner reads the
              SONAR_TOKEN environment variable automatically (CI secret or local env). -->

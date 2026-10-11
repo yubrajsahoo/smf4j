@@ -85,7 +85,7 @@ jobs:
           echo "Uploading bundle to Sonatype Central Portal..."
           RESPONSE=$(curl --silent --show-error --fail \
             --request POST \
-            --header "Authorization: UserToken ${AUTH_TOKEN}" \
+            --header "Authorization: Bearer ${AUTH_TOKEN}" \
             --form bundle=@target/central-bundle.zip \
             "https://central.sonatype.com/api/v1/publisher/upload?publishingType=USER_MANAGED")
 
@@ -96,7 +96,8 @@ jobs:
           # Poll status until VALIDATED or FAILED
           for i in {1..60}; do
             STATUS=$(curl --silent \
-              --header "Authorization: UserToken ${AUTH_TOKEN}" \
+              --request POST \
+              --header "Authorization: Bearer ${AUTH_TOKEN}" \
               "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}")
             echo "Status check $i: $STATUS"
             STATE=$(echo "$STATUS" | grep -o '"deploymentState":"[^"]*' | cut -d'"' -f4)

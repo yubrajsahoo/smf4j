@@ -19,7 +19,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
           server-id: central
           server-username: SONATYPE_USERNAME
           server-password: SONATYPE_PASSWORD
@@ -30,9 +29,94 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Deploy to Sonatype / Maven Central
+      - name: Build, Sign and Install Release Artifacts
+        run: |
+          chmod +x ./mvnw
+          ./mvnw clean install -P release -DskipTests
+
+      - name: Bundle and Publish to Sonatype Central Portal
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         run: |
-          mvn clean deploy -P release -DskipTests
+          VERSION=$(sed -n 's/.*<version>\(.*\)<\/version>.*/\1/p' pom.xml | head -n 1 | tr -d '[:space:]')
+          echo "Publishing version: $VERSION"
+
+          BUNDLE_DIR="target/central-bundle"
+          rm -rf "$BUNDLE_DIR" target/central-bundle.zip
+          mkdir -p "$BUNDLE_DIR/io/github/yubrajsahoo"
+
+          MODULES=("smf4j" "smf4j-api" "smf4j-core" "smf4j-engine" "smf4j-spring-boot-starter")
+          for MODULE in "${MODULES[@]}"; do
+            SRC="$HOME/.m2/repository/io/github/yubrajsahoo/$MODULE/$VERSION"
+            DEST="$BUNDLE_DIR/io/github/yubrajsahoo/$MODULE/$VERSION"
+            if [ -d "$SRC" ]; then
+              echo "Copying $MODULE $VERSION artifacts..."
+              mkdir -p "$DEST"
+              cp -r "$SRC"/* "$DEST"/
+            else
+              echo "Error: Directory $SRC not found!"
+              exit 1
+            fi
+          done
+
+          # Prune any local metadata or repository cache tracking files
+          find "$BUNDLE_DIR" -type f \( -name "*.lastUpdated" -o -name "_remote.repositories" -o -name "maven-metadata*.xml" \) -delete
+
+          # Generate MD5, SHA1, SHA256, SHA512 checksums for all files (artifacts + signatures)
+          cd "$BUNDLE_DIR"
+          find . -type f ! -name "*.md5" ! -name "*.sha1" ! -name "*.sha256" ! -name "*.sha512" | while read -r f; do
+            md5sum "$f" | awk '{print $1}' > "$f.md5"
+            sha1sum "$f" | awk '{print $1}' > "$f.sha1"
+            sha256sum "$f" | awk '{print $1}' > "$f.sha256"
+            sha512sum "$f" | awk '{print $1}' > "$f.sha512"
+          done
+
+          # Create clean bundle zip archive
+          zip -r ../central-bundle.zip .
+          cd ../..
+
+          # Verify bundle entries before uploading
+          echo "=== Bundle Contents ==="
+          unzip -l target/central-bundle.zip
+
+          # Upload bundle to Sonatype Central Publisher API (USER_MANAGED gives the Publish button in the portal)
+          AUTH_TOKEN=$(echo -n "${SONATYPE_USERNAME}:${SONATYPE_PASSWORD}" | base64 -w 0)
+          echo "Uploading bundle to Sonatype Central Portal..."
+          RESPONSE=$(curl --silent --show-error --fail \
+            --request POST \
+            --header "Authorization: UserToken ${AUTH_TOKEN}" \
+            --form bundle=@target/central-bundle.zip \
+            "https://central.sonatype.com/api/v1/publisher/upload?publishingType=USER_MANAGED")
+
+          DEPLOYMENT_ID=$(echo "$RESPONSE" | tr -d '"' | tr -d '[:space:]')
+          echo "Uploaded successfully! Deployment ID: ${DEPLOYMENT_ID}"
+          echo "Waiting for Sonatype Central validation..."
+
+          # Poll status until VALIDATED or FAILED
+          for i in {1..60}; do
+            STATUS=$(curl --silent \
+              --header "Authorization: UserToken ${AUTH_TOKEN}" \
+              "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}")
+            echo "Status check $i: $STATUS"
+            STATE=$(echo "$STATUS" | grep -o '"deploymentState":"[^"]*' | cut -d'"' -f4)
+            if [ "$STATE" = "VALIDATED" ] || [ "$STATE" = "PUBLISHED" ]; then
+              echo "=========================================================="
+              echo " DEPLOYMENT VALIDATED SUCCESSFULLY!"
+              echo " Deployment ID: ${DEPLOYMENT_ID}"
+              echo " You can now review and click 'Publish' at:"
+              echo " https://central.sonatype.com/publishing/deployments"
+              echo "=========================================================="
+              exit 0
+            elif [ "$STATE" = "FAILED" ]; then
+              echo "=========================================================="
+              echo " DEPLOYMENT VALIDATION FAILED!"
+              echo " Response: $STATUS"
+              echo "=========================================================="
+              exit 1
+            fi
+            sleep 5
+          done
+
+          echo "Validation timed out after 5 minutes."
+          exit 1

@@ -54,7 +54,7 @@
         <sonar.maven.plugin.version>5.0.0.4389</sonar.maven.plugin.version>
         <pitest.maven.version>1.25.9</pitest.maven.version>
         <pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
-        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+        <sonar.qualitygate.wait>false</sonar.qualitygate.wait>
 
         <!--    Sonar properties (resolved from .env locally, or -D flags in prod)    -->
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>

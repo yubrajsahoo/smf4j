@@ -10,7 +10,7 @@
     <artifactId>smf4j-api</artifactId>
 
     <name>smf4j-api</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/yubrajsahoo/smf4j</url>
     <description>Api module of SMF4J - Simple Metrics Facade for Java</description>
 
     <properties>
